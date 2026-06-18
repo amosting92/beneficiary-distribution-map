@@ -1,1 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>4Ps Beneficiary Distribution Map</title>
+
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Segoe UI,Tahoma,sans-serif;
+    background:#f5f7fa;
+}
+
+.header{
+    background:#0f5132;
+    color:white;
+    padding:20px;
+}
+
+.header h1{
+    font-size:24px;
+}
+
+.header p{
+    margin-top:5px;
+    opacity:.85;
+}
+
+.container{
+    padding:15px;
+}
+
+.filters{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:15px;
+}
+
+select{
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:8px;
+}
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:12px;
+    margin-bottom:15px;
+}
+
+.card{
+    background:white;
+    padding:15px;
+    border-radius:12px;
+    box-shadow:0 1px 4px rgba(0,0,0,.08);
+}
+
+.card-title{
+    font-size:12px;
+    color:#666;
+}
+
+.card-value{
+    font-size:28px;
+    font-weight:bold;
+    color:#0f5132;
+}
+
+#map{
+    height:700px;
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 1px 4px rgba(0,0,0,.08);
+}
+
+.loading{
+    position:fixed;
+    inset:0;
+    background:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+    font-size:20px;
+    font-weight:bold;
+}
+
+.hidden{
+    display:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="loading" id="loading">
+Loading Beneficiary Distribution Map...
+</div>
+
+<div class="header">
+    <h1>4Ps Beneficiary Distribution Map</h1>
+    <p>Province of Palawan</p>
+</div>
+
+<div class="container">
+
+<div class="filters">
+
+<select id="municipalityFilter">
+    <option value="ALL">All Municipalities</option>
+</select>
+
+<select id="indicatorFilter">
+    <option value="totalHHs">Total HHs</option>
+    <option value="active">Active</option>
+    <option value="inactive">Inactive</option>
+    <option value="registeredYes">Registered Yes</option>
+    <option value="registeredNo">Registered No</option>
+</select>
+
+</div>
+
+<div class="cards">
+
+<div class="card">
+<div class="card-title">Total HHs</div>
+<div class="card-value" id="totalHHs">0</div>
+</div>
+
+<div class="card">
+<div class="card-title">Active</div>
+<div class="card-value" id="active">0</div>
+</div>
+
+<div class="card">
+<div class="card-title">Inactive</div>
+<div class="card-value" id="inactive">0</div>
+</div>
+
+<div class="card">
+<div class="card-title">Registered</div>
+<div class="card-value" id="registeredYes">0</div>
+</div>
+
+<div class="card">
+<div class="card-title">Unregistered</div>
+<div class="card-value" id="registeredNo">0</div>
+</div>
+
+</div>
+
+<div id="map"></div>
+
+</div>
+
+<script>
+
+const API_URL =
+'https://script.google.com/macros/s/AKfycbxIijDqYshUkBNLnJ9cprKuQ_kuwd67VH8I5knVzc0dzak866YhPIqEitHin3vJcn7o/exec';
+
+const MUNICIPALITY_GEOJSON =
+'https://raw.githubusercontent.com/amosting92/beneficiary-distribution-map/main/assets/municipalities.geojson';
+
+let map;
+let municipalityLayer;
+let apiData = [];
+let municipalityTotals = {};
+
+function normalizeKey(str){
+    return String(str || '')
+        .toUpperCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g,'')
+        .replace(/[^A-Z0-9]/g,'');
+}
+
+async function loadData(){
+
+    const [dataResponse, geoResponse] = await Promise.all([
+        fetch(API_URL),
+        fetch(MUNICIPALITY_GEOJSON)
+    ]);
+
+    apiData = await dataResponse.json();
+    const geojson = await geoResponse.json();
+
+    buildMunicipalityTotals();
+    populateMunicipalities();
+    updateCards();
+
+    initializeMap(geojson);
+
+    document.getElementById('loading').classList.add('hidden');
+}
+
+function buildMunicipalityTotals(){
+
+    municipalityTotals = {};
+
+    apiData.forEach(row=>{
+
+        const mun = row.municipality;
+
+        if(!municipalityTotals[mun]){
+            municipalityTotals[mun] = {
+                active:0,
+                inactive:0,
+                registeredYes:0,
+                registeredNo:0,
+                totalHHs:0
+            };
+        }
+
+        municipalityTotals[mun].active += row.active;
+        municipalityTotals[mun].inactive += row.inactive;
+        municipalityTotals[mun].registeredYes += row.registeredYes;
+        municipalityTotals[mun].registeredNo += row.registeredNo;
+        municipalityTotals[mun].totalHHs += row.totalHHs;
+    });
+}
+
+function populateMunicipalities(){
+
+    const select =
+        document.getElementById('municipalityFilter');
+
+    Object.keys(municipalityTotals)
+        .sort()
+        .forEach(m=>{
+
+            const opt =
+                document.createElement('option');
+
+            opt.value = m;
+            opt.textContent = m;
+
+            select.appendChild(opt);
+        });
+}
+
+function updateCards(){
+
+    let totals = {
+        active:0,
+        inactive:0,
+        registeredYes:0,
+        registeredNo:0,
+        totalHHs:0
+    };
+
+    Object.values(municipalityTotals)
+        .forEach(m=>{
+
+            totals.active += m.active;
+            totals.inactive += m.inactive;
+            totals.registeredYes += m.registeredYes;
+            totals.registeredNo += m.registeredNo;
+            totals.totalHHs += m.totalHHs;
+        });
+
+    document.getElementById('totalHHs')
+        .textContent = totals.totalHHs.toLocaleString();
+
+    document.getElementById('active')
+        .textContent = totals.active.toLocaleString();
+
+    document.getElementById('inactive')
+        .textContent = totals.inactive.toLocaleString();
+
+    document.getElementById('registeredYes')
+        .textContent = totals.registeredYes.toLocaleString();
+
+    document.getElementById('registeredNo')
+        .textContent = totals.registeredNo.toLocaleString();
+}
+
+function getColor(value,max){
+
+    const ratio = value/max;
+
+    if(ratio > .80) return '#00441b';
+    if(ratio > .60) return '#1b7837';
+    if(ratio > .40) return '#5aae61';
+    if(ratio > .20) return '#a6dba0';
+
+    return '#d9f0d3';
+}
+
+function initializeMap(geojson){
+
+    map = L.map('map').setView([9.8,118.7],8);
+
+    L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        {
+            attribution:'© OpenStreetMap'
+        }
+    ).addTo(map);
+
+    drawMunicipalities(geojson);
+}
+
+function drawMunicipalities(geojson){
+
+    const indicator =
+        document.getElementById('indicatorFilter').value;
+
+    const values =
+        Object.values(municipalityTotals)
+        .map(m=>m[indicator] || 0);
+
+    const max =
+        Math.max(...values);
+
+    if(municipalityLayer){
+        municipalityLayer.remove();
+    }
+
+    municipalityLayer =
+        L.geoJSON(geojson,{
+
+        style(feature){
+
+            const mun =
+                normalizeKey(
+                    feature.properties.ADM3_EN
+                );
+
+            const record =
+                Object.entries(municipalityTotals)
+                .find(([key])=>
+                    normalizeKey(key)===mun
+                );
+
+            const value =
+                record
+                ? record[1][indicator]
+                : 0;
+
+            return {
+                fillColor:getColor(value,max),
+                weight:1,
+                color:'#ffffff',
+                fillOpacity:.8
+            };
+        },
+
+        onEachFeature(feature,layer){
+
+            const munName =
+                feature.properties.ADM3_EN;
+
+            const record =
+                municipalityTotals[munName];
+
+            if(record){
+
+                layer.bindPopup(`
+                    <b>${munName}</b><br>
+                    Total HHs:
+                    ${record.totalHHs.toLocaleString()}<br>
+                    Active:
+                    ${record.active.toLocaleString()}<br>
+                    Inactive:
+                    ${record.inactive.toLocaleString()}
+                `);
+            }
+        }
+
+    }).addTo(map);
+}
+
+document
+.getElementById('indicatorFilter')
+.addEventListener('change',async()=>{
+
+    const geo =
+        await fetch(MUNICIPALITY_GEOJSON)
+        .then(r=>r.json());
+
+    drawMunicipalities(geo);
+});
+
+loadData();
+
+</script>
+
+</body>
+</html>
