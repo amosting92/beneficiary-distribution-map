@@ -305,10 +305,7 @@ function getColor(value,max){
 
 function initializeMap(geojson){
 
-    map = L.map('map');
-
-    municipalityLayer = L.geoJSON(geojson);
-    map.fitBounds(municipalityLayer.getBounds());
+    map = L.map('map').setView([9.8,118.7],8);
 
     L.tileLayer(
         'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
