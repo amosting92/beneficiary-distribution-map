@@ -3,116 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>4Ps Beneficiary Distribution Map</title>
 
-<link rel="stylesheet"
-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
-body{
-    font-family:Segoe UI,Tahoma,sans-serif;
-    background:#f5f7fa;
-}
-
-.header{
-    background:#0f5132;
-    color:white;
-    padding:20px;
-}
-
-.header h1{
-    font-size:24px;
-}
-
-.header p{
-    margin-top:5px;
-    opacity:.85;
-}
-
-.container{
-    padding:15px;
-}
-
-.filters{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-bottom:15px;
-}
-
-select{
-    padding:10px;
-    border:1px solid #ccc;
-    border-radius:8px;
-}
-
-.cards{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-    gap:12px;
-    margin-bottom:15px;
-}
-
-.card{
-    background:white;
-    padding:15px;
-    border-radius:12px;
-    box-shadow:0 1px 4px rgba(0,0,0,.08);
-}
-
-.card-title{
-    font-size:12px;
-    color:#666;
-}
-
-.card-value{
-    font-size:28px;
-    font-weight:bold;
-    color:#0f5132;
-}
-
-#map{
-    height:700px;
-    border-radius:12px;
-    overflow:hidden;
-    box-shadow:0 1px 4px rgba(0,0,0,.08);
-}
-
-.loading{
-    position:fixed;
-    inset:0;
-    background:white;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    z-index:9999;
-    font-size:20px;
-    font-weight:bold;
-}
-
-.hidden{
-    display:none;
-}
-
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Segoe UI,Tahoma,sans-serif;background:#f5f7fa}
+.header{background:#0f5132;color:white;padding:20px}
+.header h1{font-size:24px}
+.header p{margin-top:5px;opacity:.85}
+.container{padding:15px}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}
+select{padding:10px;border:1px solid #ccc;border-radius:8px;background:white}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:15px}
+.card{background:white;padding:15px;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.card-title{font-size:12px;color:#666}
+.card-value{font-size:28px;font-weight:bold;color:#0f5132}
+#map{height:700px;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.loading{position:fixed;inset:0;background:white;display:flex;justify-content:center;align-items:center;z-index:9999;font-size:20px;font-weight:bold;padding:20px;text-align:center}
+.loading.error{font-size:16px}
+.loading-box{max-width:650px}
+.loading-box h3{margin-bottom:10px;color:#b02a37}
+.loading-box p{margin:8px 0;font-weight:normal;color:#555}
+.loading-box code{display:block;margin:12px 0;padding:10px;background:#f5f5f5;border-radius:6px;text-align:left;word-break:break-word;font-size:12px;font-weight:normal}
+button{margin-top:8px;padding:10px 16px;border:0;border-radius:8px;background:#0f5132;color:white;cursor:pointer}
+.hidden{display:none}
 </style>
 </head>
 
 <body>
-
-<div class="loading" id="loading">
-Loading Beneficiary Distribution Map...
-</div>
+<div class="loading" id="loading">Loading Beneficiary Distribution Map...</div>
 
 <div class="header">
     <h1>4Ps Beneficiary Distribution Map</h1>
@@ -120,68 +42,45 @@ Loading Beneficiary Distribution Map...
 </div>
 
 <div class="container">
+    <div class="filters">
+        <select id="municipalityFilter">
+            <option value="ALL">All Municipalities</option>
+        </select>
 
-<div class="filters">
+        <select id="indicatorFilter">
+            <option value="totalHHs">Total HHs</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="registeredYes">Registered Yes</option>
+            <option value="registeredNo">Registered No</option>
+        </select>
+    </div>
 
-<select id="municipalityFilter">
-    <option value="ALL">All Municipalities</option>
-</select>
+    <div class="cards">
+        <div class="card"><div class="card-title">Total HHs</div><div class="card-value" id="totalHHs">0</div></div>
+        <div class="card"><div class="card-title">Active</div><div class="card-value" id="active">0</div></div>
+        <div class="card"><div class="card-title">Inactive</div><div class="card-value" id="inactive">0</div></div>
+        <div class="card"><div class="card-title">Registered</div><div class="card-value" id="registeredYes">0</div></div>
+        <div class="card"><div class="card-title">Unregistered</div><div class="card-value" id="registeredNo">0</div></div>
+    </div>
 
-<select id="indicatorFilter">
-    <option value="totalHHs">Total HHs</option>
-    <option value="active">Active</option>
-    <option value="inactive">Inactive</option>
-    <option value="registeredYes">Registered Yes</option>
-    <option value="registeredNo">Registered No</option>
-</select>
-
-</div>
-
-<div class="cards">
-
-<div class="card">
-<div class="card-title">Total HHs</div>
-<div class="card-value" id="totalHHs">0</div>
-</div>
-
-<div class="card">
-<div class="card-title">Active</div>
-<div class="card-value" id="active">0</div>
-</div>
-
-<div class="card">
-<div class="card-title">Inactive</div>
-<div class="card-value" id="inactive">0</div>
-</div>
-
-<div class="card">
-<div class="card-title">Registered</div>
-<div class="card-value" id="registeredYes">0</div>
-</div>
-
-<div class="card">
-<div class="card-title">Unregistered</div>
-<div class="card-value" id="registeredNo">0</div>
-</div>
-
-</div>
-
-<div id="map"></div>
-
+    <div id="map"></div>
 </div>
 
 <script>
-
 const API_URL =
 'https://script.google.com/macros/s/AKfycbxIijDqYshUkBNLnJ9cprKuQ_kuwd67VH8I5knVzc0dzak866YhPIqEitHin3vJcn7o/exec';
 
 const MUNICIPALITY_GEOJSON =
 'https://raw.githubusercontent.com/amosting92/beneficiary-distribution-map/main/assets/municipalities.geojson';
 
+const REQUEST_TIMEOUT = 20000;
+
 let map;
 let municipalityLayer;
 let apiData = [];
 let municipalityTotals = {};
+let geojsonCache = null;
 
 function normalizeKey(str){
     return String(str || '')
@@ -191,32 +90,117 @@ function normalizeKey(str){
         .replace(/[^A-Z0-9]/g,'');
 }
 
+function toNumber(value){
+    const number = Number(value);
+    return Number.isFinite(number) ? number : 0;
+}
+
+function showError(title,message,details=''){
+    const loading = document.getElementById('loading');
+    loading.classList.add('error');
+    loading.innerHTML = `
+        <div class="loading-box">
+            <h3>${title}</h3>
+            <p>${message}</p>
+            ${details ? `<code>${details}</code>` : ''}
+            <button onclick="loadData()">Retry</button>
+        </div>`;
+}
+
+async function fetchJson(url,label){
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+
+    try{
+        const response = await fetch(url,{
+            method:'GET',
+            cache:'no-store',
+            signal:controller.signal
+        });
+
+        if(!response.ok){
+            throw new Error(`${label} returned HTTP ${response.status}`);
+        }
+
+        const text = await response.text();
+
+        if(!text.trim()){
+            throw new Error(`${label} returned an empty response`);
+        }
+
+        try{
+            return JSON.parse(text);
+        }catch(error){
+            throw new Error(
+                `${label} did not return valid JSON. Response: ` +
+                text.replace(/\s+/g,' ').slice(0,300)
+            );
+        }
+    }catch(error){
+        if(error.name === 'AbortError'){
+            throw new Error(`${label} timed out after ${REQUEST_TIMEOUT/1000} seconds`);
+        }
+        throw error;
+    }finally{
+        clearTimeout(timer);
+    }
+}
+
 async function loadData(){
+    const loading = document.getElementById('loading');
+    loading.classList.remove('hidden','error');
+    loading.innerHTML = 'Loading Beneficiary Distribution Map...';
 
-    const [dataResponse, geoResponse] = await Promise.all([
-        fetch(API_URL),
-        fetch(MUNICIPALITY_GEOJSON)
-    ]);
+    try{
+        console.log('Loading beneficiary data...');
 
-    apiData = await dataResponse.json();
-    const geojson = await geoResponse.json();
+        const dataResponse = await fetchJson(API_URL,'Beneficiary API');
 
-    buildMunicipalityTotals();
-    populateMunicipalities();
-    updateCards();
+        if(Array.isArray(dataResponse)){
+            apiData = dataResponse;
+        }else if(Array.isArray(dataResponse.data)){
+            apiData = dataResponse.data;
+        }else{
+            throw new Error(
+                'Beneficiary API returned JSON, but not an array of records.'
+            );
+        }
 
-    initializeMap(geojson);
+        console.log(`Beneficiary records loaded: ${apiData.length}`);
 
-    document.getElementById('loading').classList.add('hidden');
+        if(!geojsonCache){
+            console.log('Loading municipality boundaries...');
+            geojsonCache = await fetchJson(
+                MUNICIPALITY_GEOJSON,
+                'Municipality GeoJSON'
+            );
+        }
+
+        buildMunicipalityTotals();
+        populateMunicipalities();
+        updateCards();
+        initializeMap(geojsonCache);
+
+        loading.classList.add('hidden');
+        console.log('Dashboard loaded successfully.');
+
+    }catch(error){
+        console.error('Dashboard loading error:',error);
+
+        showError(
+            'Unable to load dashboard',
+            'The dashboard could not retrieve the required data. Check the error below and try again.',
+            error.message
+        );
+    }
 }
 
 function buildMunicipalityTotals(){
-
     municipalityTotals = {};
 
     apiData.forEach(row=>{
-
-        const mun = row.municipality;
+        const mun = String(row.municipality || '').trim();
+        if(!mun) return;
 
         if(!municipalityTotals[mun]){
             municipalityTotals[mun] = {
@@ -228,36 +212,56 @@ function buildMunicipalityTotals(){
             };
         }
 
-        municipalityTotals[mun].active += row.active;
-        municipalityTotals[mun].inactive += row.inactive;
-        municipalityTotals[mun].registeredYes += row.registeredYes;
-        municipalityTotals[mun].registeredNo += row.registeredNo;
-        municipalityTotals[mun].totalHHs += row.totalHHs;
+        municipalityTotals[mun].active += toNumber(row.active);
+        municipalityTotals[mun].inactive += toNumber(row.inactive);
+        municipalityTotals[mun].registeredYes += toNumber(row.registeredYes);
+        municipalityTotals[mun].registeredNo += toNumber(row.registeredNo);
+        municipalityTotals[mun].totalHHs += toNumber(row.totalHHs);
     });
 }
 
 function populateMunicipalities(){
+    const select = document.getElementById('municipalityFilter');
+    const current = select.value;
 
-    const select =
-        document.getElementById('municipalityFilter');
+    while(select.options.length > 1){
+        select.remove(1);
+    }
 
     Object.keys(municipalityTotals)
-        .sort()
+        .sort((a,b)=>a.localeCompare(b))
         .forEach(m=>{
-
-            const opt =
-                document.createElement('option');
-
+            const opt = document.createElement('option');
             opt.value = m;
             opt.textContent = m;
-
             select.appendChild(opt);
         });
+
+    if([...select.options].some(o=>o.value === current)){
+        select.value = current;
+    }else{
+        select.value = 'ALL';
+    }
+}
+
+function getSelectedMunicipality(){
+    return document.getElementById('municipalityFilter').value;
+}
+
+function getFilteredTotals(){
+    const selected = getSelectedMunicipality();
+
+    if(selected === 'ALL'){
+        return Object.values(municipalityTotals);
+    }
+
+    return municipalityTotals[selected]
+        ? [municipalityTotals[selected]]
+        : [];
 }
 
 function updateCards(){
-
-    let totals = {
+    const totals = {
         active:0,
         inactive:0,
         registeredYes:0,
@@ -265,33 +269,23 @@ function updateCards(){
         totalHHs:0
     };
 
-    Object.values(municipalityTotals)
-        .forEach(m=>{
+    getFilteredTotals().forEach(m=>{
+        totals.active += m.active;
+        totals.inactive += m.inactive;
+        totals.registeredYes += m.registeredYes;
+        totals.registeredNo += m.registeredNo;
+        totals.totalHHs += m.totalHHs;
+    });
 
-            totals.active += m.active;
-            totals.inactive += m.inactive;
-            totals.registeredYes += m.registeredYes;
-            totals.registeredNo += m.registeredNo;
-            totals.totalHHs += m.totalHHs;
-        });
-
-    document.getElementById('totalHHs')
-        .textContent = totals.totalHHs.toLocaleString();
-
-    document.getElementById('active')
-        .textContent = totals.active.toLocaleString();
-
-    document.getElementById('inactive')
-        .textContent = totals.inactive.toLocaleString();
-
-    document.getElementById('registeredYes')
-        .textContent = totals.registeredYes.toLocaleString();
-
-    document.getElementById('registeredNo')
-        .textContent = totals.registeredNo.toLocaleString();
+    document.getElementById('totalHHs').textContent = totals.totalHHs.toLocaleString();
+    document.getElementById('active').textContent = totals.active.toLocaleString();
+    document.getElementById('inactive').textContent = totals.inactive.toLocaleString();
+    document.getElementById('registeredYes').textContent = totals.registeredYes.toLocaleString();
+    document.getElementById('registeredNo').textContent = totals.registeredNo.toLocaleString();
 }
 
 function getColor(value,max){
+    if(max <= 0 || value <= 0) return '#d9f0d3';
 
     const ratio = value/max;
 
@@ -299,108 +293,103 @@ function getColor(value,max){
     if(ratio > .60) return '#1b7837';
     if(ratio > .40) return '#5aae61';
     if(ratio > .20) return '#a6dba0';
-
     return '#d9f0d3';
 }
 
+function findMunicipalityRecord(name){
+    const normalized = normalizeKey(name);
+
+    const match = Object.entries(municipalityTotals)
+        .find(([key])=>normalizeKey(key) === normalized);
+
+    return match ? match[1] : null;
+}
+
 function initializeMap(geojson){
+    if(!map){
+        map = L.map('map').setView([9.8,118.7],8);
 
-    map = L.map('map').setView([9.8,118.7],8);
-
-    L.tileLayer(
-        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        {
-            attribution:'© OpenStreetMap'
-        }
-    ).addTo(map);
+        L.tileLayer(
+            'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            {
+                attribution:'© OpenStreetMap contributors',
+                maxZoom:19
+            }
+        ).addTo(map);
+    }
 
     drawMunicipalities(geojson);
 }
 
 function drawMunicipalities(geojson){
-
     const indicator =
         document.getElementById('indicatorFilter').value;
 
-    const values =
-        Object.values(municipalityTotals)
-        .map(m=>m[indicator] || 0);
+    const selected = getSelectedMunicipality();
 
-    const max =
-        Math.max(...values);
+    const values = Object.values(municipalityTotals)
+        .map(m=>toNumber(m[indicator]));
+
+    const max = values.length ? Math.max(...values) : 0;
 
     if(municipalityLayer){
         municipalityLayer.remove();
     }
 
-    municipalityLayer =
-        L.geoJSON(geojson,{
-
+    municipalityLayer = L.geoJSON(geojson,{
         style(feature){
+            const munName = feature.properties.ADM3_EN || '';
+            const record = findMunicipalityRecord(munName);
+            const value = record ? toNumber(record[indicator]) : 0;
 
-            const mun =
-                normalizeKey(
-                    feature.properties.ADM3_EN
-                );
-
-            const record =
-                Object.entries(municipalityTotals)
-                .find(([key])=>
-                    normalizeKey(key)===mun
-                );
-
-            const value =
-                record
-                ? record[1][indicator]
-                : 0;
+            const isSelected =
+                selected === 'ALL' ||
+                normalizeKey(selected) === normalizeKey(munName);
 
             return {
                 fillColor:getColor(value,max),
-                weight:1,
+                weight:isSelected ? 1 : .5,
                 color:'#ffffff',
-                fillOpacity:.8
+                fillOpacity:
+                    selected === 'ALL'
+                    ? .8
+                    : (isSelected ? .9 : .25)
             };
         },
 
         onEachFeature(feature,layer){
-
             const munName =
-                feature.properties.ADM3_EN;
+                feature.properties.ADM3_EN || 'Unknown Municipality';
 
-            const record =
-                municipalityTotals[munName];
+            const record = findMunicipalityRecord(munName);
 
             if(record){
-
                 layer.bindPopup(`
                     <b>${munName}</b><br>
-                    Total HHs:
-                    ${record.totalHHs.toLocaleString()}<br>
-                    Active:
-                    ${record.active.toLocaleString()}<br>
-                    Inactive:
-                    ${record.inactive.toLocaleString()}
+                    Total HHs: ${record.totalHHs.toLocaleString()}<br>
+                    Active: ${record.active.toLocaleString()}<br>
+                    Inactive: ${record.inactive.toLocaleString()}<br>
+                    Registered: ${record.registeredYes.toLocaleString()}<br>
+                    Unregistered: ${record.registeredNo.toLocaleString()}
                 `);
             }
         }
-
     }).addTo(map);
 }
 
-document
-.getElementById('indicatorFilter')
-.addEventListener('change',async()=>{
+document.getElementById('indicatorFilter')
+.addEventListener('change',()=>{
+    updateCards();
+    if(geojsonCache) drawMunicipalities(geojsonCache);
+});
 
-    const geo =
-        await fetch(MUNICIPALITY_GEOJSON)
-        .then(r=>r.json());
-
-    drawMunicipalities(geo);
+document.getElementById('municipalityFilter')
+.addEventListener('change',()=>{
+    updateCards();
+    if(geojsonCache) drawMunicipalities(geojsonCache);
 });
 
 loadData();
-
 </script>
-
 </body>
 </html>
