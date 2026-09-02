@@ -332,45 +332,6 @@
       legendControl.addTo(map);
     }
 
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxIijDqYshUkBNLnJ9cprKuQ_kuwd67VH8I5knVzc0dzak866YhPIqEitHin3vJcn7o/exec';
-
-    function apiJsonp(action, params) {
-      return new Promise(function(resolve, reject) {
-        var callbackName = '__palawanApi_' + Date.now() + '_' +
-          Math.random().toString(36).slice(2);
-
-        var script = document.createElement('script');
-        var query = new URLSearchParams(params || {});
-        query.set('action', action);
-        query.set('callback', callbackName);
-
-        var timeout = setTimeout(function() {
-          cleanup();
-          reject(new Error('API timeout.'));
-        }, 15000);
-
-        function cleanup() {
-          clearTimeout(timeout);
-          if (script.parentNode) script.parentNode.removeChild(script);
-          try { delete window[callbackName]; } catch(e) { window[callbackName] = undefined; }
-        }
-
-        window[callbackName] = function(data) {
-          cleanup();
-          if (data && data.error) reject(new Error(data.error));
-          else resolve(data);
-        };
-
-        script.onerror = function() {
-          cleanup();
-          reject(new Error('Could not reach Apps Script API.'));
-        };
-
-        script.src = API_URL + '?' + query.toString();
-        document.head.appendChild(script);
-      });
-    }
-
     function loadMapShapes() {
       showLoader('Kinukuha ang map boundaries...');
 
@@ -629,8 +590,8 @@
       var backendName = getBackendMunicipalityName(m);
       var uiName = displayName || displayMunicipalityName(m);
 
-      apiJsonp('barangay', { municipality: backendName })
-        .then(function(d){
+      google.script.run
+        .withSuccessHandler(function(d){
           hideLoader();
 
           lockedArea = uiName;
@@ -649,11 +610,11 @@
             else renderProvinceSummary();
           };
         })
-        .catch(function(err){
+        .withFailureHandler(function(err){
           hideLoader();
-          showError('Hindi ma-load ang barangay data: ' +
-            (err && err.message ? err.message : err));
-        });
+          showError('Hindi ma-load ang barangay data: ' + (err && err.message ? err.message : err));
+        })
+        .getBarangayData(m);
     }
 
     function drawBrgy(m, d, displayName) {
@@ -936,32 +897,37 @@
     function refreshData() {
       showLoader('Nagre-refresh ng data...');
 
-      apiJsonp('clearcache')
-        .then(function(){
-          return apiJsonp('municipal');
+      google.script.run
+        .withSuccessHandler(function(){
+          google.script.run
+            .withSuccessHandler(function(d){
+              sheetData = Array.isArray(d) ? d : [];
+              breaks = computeBreaks(sheetData);
+
+              document.getElementById('lastRefreshTime').textContent =
+                'Latest refresh: ' + new Date().toLocaleTimeString();
+
+              if (municipalLayer) municipalLayer.setStyle(polygonStyle);
+              if (hucLayer) hucLayer.setStyle(polygonStyle);
+              addLegend();
+
+              hideLoader();
+
+              if (currentView === 'province') renderProvinceSummary();
+              else if (currentView === 'municipality') renderMunicipalityBreakdown(currentType);
+              else if (currentView === 'barangay') renderSummaryTable();
+            })
+            .withFailureHandler(function(err){
+              hideLoader();
+              showError('Refresh failed: ' + (err && err.message ? err.message : err));
+            })
+            .getMunicipalData();
         })
-        .then(function(d){
-          sheetData = Array.isArray(d) ? d : [];
-          breaks = computeBreaks(sheetData);
-
-          document.getElementById('lastRefreshTime').textContent =
-            'Latest refresh: ' + new Date().toLocaleTimeString();
-
-          if (municipalLayer) municipalLayer.setStyle(polygonStyle);
-          if (hucLayer) hucLayer.setStyle(polygonStyle);
-          addLegend();
-
+        .withFailureHandler(function(err){
           hideLoader();
-
-          if (currentView === 'province') renderProvinceSummary();
-          else if (currentView === 'municipality') renderMunicipalityBreakdown(currentType);
-          else if (currentView === 'barangay') renderSummaryTable();
+          showError('Cache clear failed: ' + (err && err.message ? err.message : err));
         })
-        .catch(function(err){
-          hideLoader();
-          showError('Refresh failed: ' +
-            (err && err.message ? err.message : err));
-        });
+        .clearMapCache();
     }
 
     function resetMap() {
@@ -1006,13 +972,13 @@
     document.addEventListener('DOMContentLoaded',function(){
       showLoader('Kinukuha ang data...');
 
-      apiJsonp('municipal')
-        .then(onDataReceived)
-        .catch(function(err){
+      google.script.run
+        .withSuccessHandler(onDataReceived)
+        .withFailureHandler(function(err){
           hideLoader();
-          showError('Hindi ma-load ang data: ' +
-            (err && err.message ? err.message : err));
-        });
+          showError('Hindi ma-load ang data: ' + (err && err.message ? err.message : err));
+        })
+        .getMunicipalData();
 
       // Data is released on a periodic schedule.
       // Keep the dashboard's data vintage fixed until the next official update.
