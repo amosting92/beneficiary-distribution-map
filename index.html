@@ -1,2857 +1,2024 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <title>4Ps Beneficiary Distribution Map</title>
+  <title>Palawan Beneficiary Dashboard</title>
 
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  >
+  />
 
   <style>
-
     * {
       box-sizing: border-box;
     }
 
-    html,
     body {
       margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
       font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
         "Segoe UI",
-        Tahoma,
-        Geneva,
+        Roboto,
+        Arial,
         sans-serif;
+      background: #f5f7fa;
+      color: #1f2937;
     }
 
-    body {
-      overflow: hidden;
+    .app {
+      min-height: 100vh;
     }
+
+    /* =========================
+       HEADER
+       ========================= */
+
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 18px 24px;
+      position: relative;
+      z-index: 1000;
+    }
+
+    .header-inner {
+      max-width: 1500px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .title-wrap h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .title-wrap p {
+      margin: 5px 0 0;
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    button,
+    select {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      color: #374151;
+      border-radius: 8px;
+      padding: 9px 13px;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+
+    button:hover {
+      background: #f9fafb;
+      border-color: #9ca3af;
+    }
+
+    button.primary {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: white;
+    }
+
+    button.primary:hover {
+      background: #1d4ed8;
+    }
+
+    /* =========================
+       MAIN
+       ========================= */
+
+    main {
+      max-width: 1500px;
+      margin: auto;
+      padding: 18px 24px 30px;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 420px;
+      gap: 18px;
+    }
+
+    /* =========================
+       CARDS
+       ========================= */
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    }
+
+    .card-header {
+      padding: 15px 17px;
+      border-bottom: 1px solid #eef0f2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .card-header h2 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .card-body {
+      padding: 16px;
+    }
+
+    /* =========================
+       SUMMARY CARDS
+       ========================= */
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .summary-card {
+      padding: 16px;
+    }
+
+    .summary-label {
+      color: #6b7280;
+      font-size: 12px;
+      margin-bottom: 7px;
+    }
+
+    .summary-value {
+      font-size: 25px;
+      font-weight: 750;
+      color: #111827;
+    }
+
+    .summary-sub {
+      margin-top: 4px;
+      color: #9ca3af;
+      font-size: 11px;
+    }
+
+    /* =========================
+       MAP
+       ========================= */
 
     #map {
       width: 100%;
-      height: 100vh;
+      height: 650px;
+      border-radius: 0 0 12px 12px;
     }
 
-    /* ======================================================
-       TITLE
-       ====================================================== */
-
-    .floating-title {
-
-      position: absolute;
-
-      top: 15px;
-      left: 50%;
-
-      transform:
-        translateX(-50%);
-
-      z-index: 1000;
-
-      background:
-        rgba(255, 255, 255, 0.96);
-
-      padding:
-        10px 25px;
-
-      border-radius: 50px;
-
-      box-shadow:
-        0 4px 15px
-        rgba(0, 0, 0, 0.20);
-
-      text-align: center;
-
-      pointer-events: none;
-
-      min-width: 300px;
+    .map-container {
+      overflow: hidden;
     }
 
-    .floating-title h1 {
-
-      margin: 0;
-
-      font-size: 20px;
-
-      color: #333;
-
-      text-transform: uppercase;
-
-      letter-spacing: 1px;
+    .map-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
-    .floating-title p {
-
-      margin: 2px 0 0;
-
-      font-size: 12px;
-
-      color: #666;
-    }
-
-
-    /* ======================================================
-       LOADER
-       ====================================================== */
-
-    #loader {
-
-      position: absolute;
-
-      top: 50%;
-      left: 50%;
-
-      transform:
-        translate(-50%, -50%);
-
-      z-index: 9999;
-
-      background: white;
-
-      padding:
-        20px 30px;
-
+    .map-toolbar select {
+      min-width: 210px;
+      padding: 8px 10px;
+      border: 1px solid #d1d5db;
       border-radius: 8px;
-
-      box-shadow:
-        0 4px 15px
-        rgba(0, 0, 0, 0.20);
-
-      font-weight: bold;
-
-      text-align: center;
-
-      min-width: 230px;
+      background: white;
+      color: #374151;
     }
 
+    /* =========================
+       RIGHT PANEL
+       ========================= */
 
-    /* ======================================================
-       ERROR
-       ====================================================== */
+    .side-column {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .data-as-of {
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .municipality-list {
+      max-height: 520px;
+      overflow-y: auto;
+    }
+
+    .municipality-row {
+      padding: 12px 4px;
+      border-bottom: 1px solid #f0f1f3;
+      cursor: pointer;
+    }
+
+    .municipality-row:last-child {
+      border-bottom: none;
+    }
+
+    .municipality-row:hover {
+      background: #f9fafb;
+    }
+
+    .municipality-name {
+      font-weight: 650;
+      font-size: 13px;
+      margin-bottom: 7px;
+    }
+
+    .municipality-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      font-size: 11px;
+    }
+
+    .stat-label {
+      color: #9ca3af;
+      display: block;
+    }
+
+    .stat-value {
+      color: #374151;
+      font-weight: 650;
+    }
+
+    /* =========================
+       BARANGAY
+       ========================= */
+
+    .barangay-list {
+      max-height: 430px;
+      overflow-y: auto;
+    }
+
+    .barangay-row {
+      padding: 11px 3px;
+      border-bottom: 1px solid #f0f1f3;
+    }
+
+    .barangay-name {
+      font-weight: 600;
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .barangay-values {
+      display: flex;
+      gap: 14px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    /* =========================
+       BREAKDOWN
+       ========================= */
+
+    .breakdown-section {
+      margin-top: 15px;
+    }
+
+    .breakdown-title {
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 7px;
+      color: #374151;
+    }
+
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 5px 0;
+      border-bottom: 1px solid #f3f4f6;
+      font-size: 11px;
+    }
+
+    .breakdown-row span:first-child {
+      color: #6b7280;
+    }
+
+    .breakdown-row span:last-child {
+      font-weight: 650;
+    }
+
+    /* =========================
+       LOADING / ERROR
+       ========================= */
+
+    #loadingOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.94);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #2563eb;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading-text {
+      font-size: 14px;
+      color: #4b5563;
+    }
 
     #errorBox {
-
-      position: absolute;
-
-      top: 50%;
-      left: 50%;
-
-      transform:
-        translate(-50%, -50%);
-
-      z-index: 10001;
-
-      background: white;
-
-      border-radius: 10px;
-
-      padding: 25px;
-
-      box-shadow:
-        0 6px 25px
-        rgba(0, 0, 0, 0.25);
-
-      width: min(90vw, 500px);
-
       display: none;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+      font-size: 13px;
+    }
 
+    #errorBox strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    /* =========================
+       EMPTY STATE
+       ========================= */
+
+    .empty {
+      padding: 25px 10px;
       text-align: center;
+      color: #9ca3af;
+      font-size: 12px;
     }
 
-    #errorBox h3 {
-
-      margin:
-        0 0 10px;
-
-      color: #c0392b;
-    }
-
-    #errorMessage {
-
-      color: #555;
-
-      font-size: 13px;
-
-      line-height: 1.5;
-
-      word-break: break-word;
-    }
-
-    #retryBtn {
-
-      margin-top: 15px;
-
-      border: none;
-
-      background: #0056b3;
-
-      color: white;
-
-      padding:
-        9px 18px;
-
-      border-radius: 5px;
-
-      cursor: pointer;
-
-      font-size: 13px;
-    }
-
-    #retryBtn:hover {
-      background: #004494;
-    }
-
-
-    /* ======================================================
-       INFO PANEL
-       ====================================================== */
-
-    .info {
-
-      padding:
-        12px 16px;
-
-      background:
-        rgba(255, 255, 255, 0.96);
-
-      box-shadow:
-        0 0 15px
-        rgba(0, 0, 0, 0.20);
-
-      border-radius: 8px;
-
-      min-width: 220px;
-    }
-
-    .info h4 {
-
-      margin:
-        0 0 8px;
-
-      color: #333;
-
-      font-size: 16px;
-
-      border-bottom:
-        1px solid #ddd;
-
-      padding-bottom: 4px;
-    }
-
-
-    /* ======================================================
+    /* =========================
        LEGEND
-       ====================================================== */
+       ========================= */
 
     .legend {
-
-      line-height: 22px;
-
-      font-size: 12px;
-    }
-
-    .legend strong {
-
-      display: block;
-
-      margin-bottom: 6px;
-
-      font-size: 13px;
-    }
-
-    .legend i {
-
-      width: 16px;
-
-      height: 16px;
-
-      float: left;
-
-      margin-right: 8px;
-
-      margin-top: 3px;
-
-      opacity: 0.85;
-
-      border-radius: 2px;
-    }
-
-
-    /* ======================================================
-       BACK BUTTON
-       ====================================================== */
-
-    #backBtn {
-
-      position: absolute;
-
-      top: 80px;
-      left: 20px;
-
-      z-index: 9999;
-
-      padding:
-        10px 20px;
-
-      background-color: #0056b3;
-
-      color: white;
-
-      border: none;
-
-      border-radius: 4px;
-
-      font-size: 14px;
-
-      cursor: pointer;
-
-      display: none;
-    }
-
-    #backBtn:hover {
-      background-color: #004494;
-    }
-
-
-    /* ======================================================
-       TABLE PANEL
-       ====================================================== */
-
-    #tablePanel {
-
-      position: absolute;
-
-      bottom: 0;
-      left: 0;
-
-      width: 100%;
-
-      max-height: 40vh;
-
       background: white;
-
-      z-index: 9998;
-
-      box-shadow:
-        0 -4px 15px
-        rgba(0, 0, 0, 0.20);
-
-      display: none;
-
-      flex-direction: column;
-
-      border-top:
-        3px solid #0056b3;
+      padding: 9px 11px;
+      border-radius: 8px;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.18);
+      font-size: 11px;
+      line-height: 18px;
     }
 
+    .legend-title {
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
 
-    .table-header {
-
-      padding:
-        10px 20px;
-
-      background: #f8f9fa;
-
-      border-bottom:
-        1px solid #ddd;
-
+    .legend-item {
       display: flex;
-
-      justify-content:
-        space-between;
-
-      align-items:
-        flex-start;
+      align-items: center;
+      gap: 6px;
     }
 
-
-    .refresh-info {
-
-      font-size: 12px;
-
-      color: #666;
-
-      margin-top: 2px;
+    .legend-box {
+      width: 13px;
+      height: 13px;
+      border-radius: 2px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
     }
 
+    /* =========================
+       RESPONSIVE
+       ========================= */
 
-    .btn-refresh {
+    @media (max-width: 1100px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
 
-      cursor: pointer;
+      .side-column {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
 
-      color: #0056b3;
-
-      font-weight: bold;
-
-      margin-left: 10px;
-
-      user-select: none;
+      #map {
+        height: 580px;
+      }
     }
-
-    .btn-refresh:hover {
-      text-decoration: underline;
-    }
-
-
-    .table-container {
-
-      overflow-y: auto;
-
-      flex-grow: 1;
-    }
-
-
-    table {
-
-      width: 100%;
-
-      border-collapse:
-        collapse;
-
-      text-align: left;
-
-      font-size: 13px;
-    }
-
-
-    th,
-    td {
-
-      padding:
-        8px 12px;
-
-      border-bottom:
-        1px solid #eee;
-    }
-
-
-    th {
-
-      position: sticky;
-
-      top: 0;
-
-      background: white;
-
-      z-index: 10;
-
-      border-bottom:
-        2px solid #ccc;
-    }
-
-
-    .clickable-th {
-
-      color: #0056b3;
-
-      cursor: pointer;
-
-      text-decoration: underline;
-    }
-
-
-    .clickable-row {
-
-      cursor: pointer;
-    }
-
-    .clickable-row:hover {
-      background: #f4f8fc;
-    }
-
-
-    /* ======================================================
-       MOBILE
-       ====================================================== */
 
     @media (max-width: 700px) {
-
-      .floating-title {
-
-        top: 8px;
-
-        min-width: 250px;
-
-        padding:
-          8px 15px;
+      header {
+        padding: 15px;
       }
 
-      .floating-title h1 {
-        font-size: 14px;
+      .header-inner {
+        align-items: flex-start;
+        flex-direction: column;
       }
 
-      .floating-title p {
-        font-size: 10px;
+      main {
+        padding: 12px;
       }
 
-      #tablePanel {
-        max-height: 45vh;
+      .summary-grid {
+        grid-template-columns: 1fr;
       }
 
-      .table-header {
-        padding:
-          8px 10px;
+      .side-column {
+        display: flex;
       }
 
-      th,
-      td {
-        padding:
-          7px 8px;
-      }
-
-      .info {
-        min-width: 180px;
+      #map {
+        height: 480px;
       }
     }
-
   </style>
-
 </head>
-
 
 <body>
 
-  <!-- ======================================================
-       TITLE
-       ====================================================== -->
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Loading Beneficiary Distribution Map...</div>
+</div>
 
-  <div class="floating-title">
+<div class="app">
 
-    <h1>
-      4Ps Beneficiary Dashboard
-    </h1>
+  <header>
+    <div class="header-inner">
 
-    <p>
-      Palawan Provincial Operations Office
-    </p>
+      <div class="title-wrap">
+        <h1>Palawan Beneficiary Dashboard</h1>
+        <p>
+          4Ps Beneficiary Distribution by Municipality and Barangay
+        </p>
+      </div>
 
-    <p id="dataAsOf">
-      Data as of: —
-    </p>
+      <div class="header-actions">
+        <button onclick="refreshDashboard()">
+          Refresh
+        </button>
 
-  </div>
+        <button onclick="resetMap()">
+          Reset Map
+        </button>
+      </div>
 
+    </div>
+  </header>
 
-  <!-- ======================================================
-       LOADER
-       ====================================================== -->
+  <main>
 
-  <div id="loader">
-    Kinukuha ang data...
-  </div>
-
-
-  <!-- ======================================================
-       ERROR BOX
-       ====================================================== -->
-
-  <div id="errorBox">
-
-    <h3>
-      Unable to load dashboard
-    </h3>
-
-    <div id="errorMessage">
-      The dashboard could not retrieve
-      the required data.
+    <div id="errorBox">
+      <strong>Unable to load dashboard</strong>
+      <span id="errorMessage"></span>
+      <br />
+      <button
+        class="primary"
+        style="margin-top:10px"
+        onclick="refreshDashboard()"
+      >
+        Try Again
+      </button>
     </div>
 
-    <button
-      id="retryBtn"
-      onclick="loadDashboard()"
-    >
-      Retry
-    </button>
+    <!-- SUMMARY -->
 
-  </div>
+    <div class="summary-grid">
 
+      <div class="card summary-card">
+        <div class="summary-label">
+          Active Beneficiaries
+        </div>
 
-  <!-- ======================================================
-       BACK BUTTON
-       ====================================================== -->
-
-  <button
-    id="backBtn"
-    onclick="resetMap()"
-  >
-    ← Bumalik sa Buong Palawan
-  </button>
-
-
-  <!-- ======================================================
-       MAP
-       ====================================================== -->
-
-  <div id="map"></div>
-
-
-  <!-- ======================================================
-       TABLE
-       ====================================================== -->
-
-  <div id="tablePanel">
-
-    <div class="table-header">
-
-      <div>
-
-        <h3
-          id="panelTitle"
-          style="margin:0 0 4px;"
+        <div
+          class="summary-value"
+          id="totalActive"
         >
-          Palawan Province-Wide Summary
-        </h3>
+          —
+        </div>
 
-        <div class="refresh-info">
+        <div class="summary-sub">
+          Provincial total
+        </div>
+      </div>
 
-          <span id="dataAsOfTable">
-            Data as of: —
-          </span>
+      <div class="card summary-card">
+        <div class="summary-label">
+          Inactive Beneficiaries
+        </div>
 
-          |
+        <div
+          class="summary-value"
+          id="totalInactive"
+        >
+          —
+        </div>
 
-          <span id="lastRefreshTime">
-            Latest refresh: Just now
-          </span>
+        <div class="summary-sub">
+          Provincial total
+        </div>
+      </div>
+
+      <div class="card summary-card">
+        <div class="summary-label">
+          Total Beneficiaries
+        </div>
+
+        <div
+          class="summary-value"
+          id="totalBeneficiaries"
+        >
+          —
+        </div>
+
+        <div class="summary-sub">
+          Active + inactive
+        </div>
+      </div>
+
+    </div>
+
+
+    <div class="dashboard-grid">
+
+      <!-- MAP -->
+
+      <div class="card map-container">
+
+        <div class="card-header">
+
+          <h2>Beneficiary Distribution Map</h2>
+
+          <div class="map-toolbar">
+
+            <select
+              id="municipalityFilter"
+              onchange="selectMunicipality(this.value)"
+            >
+              <option value="">
+                All Municipalities
+              </option>
+            </select>
+
+          </div>
 
         </div>
 
-        <button
-          id="btnBackToSummary"
-          style="
-            display:none;
-            cursor:pointer;
-            border:none;
-            background:none;
-            color:#0056b3;
-            padding:4px 0 0;
-            font-size:13px;
-          "
-          onclick="renderProvinceSummary()"
-        >
-          ← Bumalik sa Summary
-        </button>
+        <div id="map"></div>
 
       </div>
 
 
-      <div
-        style="
-          display:flex;
-          align-items:center;
-          gap:8px;
-        "
-      >
+      <!-- SIDE -->
 
-        <span
-          class="btn-refresh"
-          onclick="refreshData()"
-        >
-          ↻ I-refresh
-        </span>
+      <div class="side-column">
 
-        <button
-          onclick="
-            document.getElementById(
-              'tablePanel'
-            ).style.display='none'
-          "
-          style="
-            border:none;
-            background:none;
-            font-size:18px;
-            cursor:pointer;
-          "
-        >
-          ×
-        </button>
+        <!-- MUNICIPALITIES -->
+
+        <div class="card">
+
+          <div class="card-header">
+
+            <h2>Municipality Breakdown</h2>
+
+            <span
+              class="data-as-of"
+              id="dataAsOf"
+            >
+              Data as of: —
+            </span>
+
+          </div>
+
+          <div
+            class="card-body municipality-list"
+            id="municipalityList"
+          >
+            <div class="empty">
+              Loading...
+            </div>
+          </div>
+
+        </div>
+
+
+        <!-- BARANGAYS -->
+
+        <div class="card">
+
+          <div class="card-header">
+
+            <h2 id="barangayTitle">
+              Barangay Breakdown
+            </h2>
+
+          </div>
+
+          <div class="card-body">
+
+            <div
+              class="barangay-list"
+              id="barangayList"
+            >
+              <div class="empty">
+                Select a municipality to view barangays.
+              </div>
+            </div>
+
+            <div
+              id="breakdownContainer"
+              style="display:none"
+            >
+
+              <div class="breakdown-section">
+
+                <div class="breakdown-title">
+                  Active Status Breakdown
+                </div>
+
+                <div id="activeBreakdown"></div>
+
+              </div>
+
+              <div class="breakdown-section">
+
+                <div class="breakdown-title">
+                  Inactive Status Breakdown
+                </div>
+
+                <div id="inactiveBreakdown"></div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
 
       </div>
 
     </div>
 
+  </main>
 
-    <div class="table-container">
-
-      <table id="dataTable">
-
-        <thead id="tableHead"></thead>
-
-        <tbody id="tableBody"></tbody>
-
-      </table>
-
-    </div>
-
-  </div>
+</div>
 
 
-  <!-- ======================================================
-       LEAFLET
-       ====================================================== -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-  ></script>
+<script>
 
+  /* ==========================================================
+     CONFIGURATION
+     ========================================================== */
 
-  <script>
+  const API_URL =
+    'https://script.google.com/macros/s/AKfycbxIijDqYshUkBNLnJ9cprKuQ_kuwd67VH8I5knVzc0dzak866YhPIqEitHin3vJcn7o/exec';
 
-    // ======================================================
-    // CONFIGURATION
-    // ======================================================
+  const MUNICIPALITY_GEOJSON =
+    'https://raw.githubusercontent.com/amosting92/beneficiary-distribution-map/main/assets/municipalities.geojson';
 
-    const API_URL =
-      'https://script.google.com/macros/s/AKfycbxIijDqYshUkBNLnJ9cprKuQ_kuwd67VH8I5knVzc0dzak866YhPIqEitHin3vJcn7o/exec';
+  const BARANGAY_GEOJSON =
+    'https://raw.githubusercontent.com/amosting92/beneficiary-distribution-map/main/assets/barangays.geojson';
 
-
-    const MUNI_GEOJSON_URL =
-      'https://raw.githubusercontent.com/amosting92/beneficiary-distribution-map/main/assets/municipalities.geojson';
+  const HUC_GEOJSON =
+    'https://raw.githubusercontent.com/amosting92/beneficiary-distribution-map/main/assets/highly_urbanized_cities.geojson';
 
 
-    const HUC_GEOJSON_URL =
-      'https://raw.githubusercontent.com/amosting92/beneficiary-distribution-map/main/assets/highly_urbanized_cities.geojson';
+  /* ==========================================================
+     GLOBAL STATE
+     ========================================================== */
+
+  let map;
+
+  let municipalityLayer = null;
+  let barangayLayer = null;
+  let hucLayer = null;
+
+  let municipalityData = [];
+  let selectedMunicipality = '';
+
+  let municipalityGeoJSON = null;
+  let barangayGeoJSON = null;
+  let hucGeoJSON = null;
 
 
-    const BRGY_GEOJSON_URL =
-      'https://raw.githubusercontent.com/amosting92/beneficiary-distribution-map/main/assets/barangays.geojson';
+  /* ==========================================================
+     NUMBER HELPERS
+     ========================================================== */
+
+  function toNumber(value) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : 0;
+  }
 
 
-    // ======================================================
-    // MAP
-    // ======================================================
+  function formatNumber(value) {
+    return toNumber(value).toLocaleString('en-US');
+  }
 
-    const map =
-      L.map('map')
-        .setView(
-          [9.8349, 118.7384],
-          7
+
+  /* ==========================================================
+     JSONP API
+     ========================================================== */
+
+  function loadJsonp(action, params = {}) {
+
+    return new Promise((resolve, reject) => {
+
+      const callbackName =
+        'jsonp_' +
+        Date.now() +
+        '_' +
+        Math.random()
+          .toString(36)
+          .substring(2);
+
+      const script =
+        document.createElement('script');
+
+      const query =
+        new URLSearchParams({
+          api: '1',
+          action,
+          callback: callbackName,
+          ...params
+        });
+
+      let finished = false;
+
+      const timeout =
+        setTimeout(() => {
+
+          if (finished) return;
+
+          finished = true;
+
+          cleanup();
+
+          reject(
+            new Error(
+              'API request timed out.'
+            )
+          );
+
+        }, 15000);
+
+
+      function cleanup() {
+
+        clearTimeout(timeout);
+
+        try {
+          delete window[callbackName];
+        } catch (_) {
+          window[callbackName] = undefined;
+        }
+
+        if (script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
+
+      }
+
+
+      window[callbackName] =
+        response => {
+
+          if (finished) return;
+
+          finished = true;
+
+          cleanup();
+
+          if (
+            !response ||
+            response.success !== true
+          ) {
+
+            reject(
+              new Error(
+                response?.error ||
+                'Unknown API error.'
+              )
+            );
+
+            return;
+          }
+
+          resolve(response.data);
+
+        };
+
+
+      script.onerror = () => {
+
+        if (finished) return;
+
+        finished = true;
+
+        cleanup();
+
+        reject(
+          new Error(
+            'Failed to load Apps Script API.'
+          )
         );
 
+      };
 
-    // Use OpenStreetMap.
-    // No CARTO API key required.
+
+      script.src =
+        API_URL +
+        '?' +
+        query.toString();
+
+      document.body.appendChild(script);
+
+    });
+
+  }
+
+
+  /* ==========================================================
+     GEOJSON
+     ========================================================== */
+
+  async function loadGeoJSON(url) {
+
+    const response =
+      await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(
+        `GeoJSON request failed: ${response.status}`
+      );
+    }
+
+    return await response.json();
+
+  }
+
+
+  /* ==========================================================
+     MAP INITIALIZATION
+     ========================================================== */
+
+  function initializeMap() {
+
+    map =
+      L.map('map', {
+        zoomControl: true,
+        preferCanvas: true
+      });
+
 
     L.tileLayer(
       'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
       {
+        maxZoom: 19,
         attribution:
           '&copy; OpenStreetMap contributors'
       }
     ).addTo(map);
 
 
-    // ======================================================
-    // STATE
-    // ======================================================
-
-    let sheetData = [];
-
-    let municipalLayer = null;
-
-    let barangayLayer = null;
-
-    let legendControl = null;
-
-    let cachedBrgyGeoJson = null;
-
-    let currentBrgyData = [];
-
-    let currentMuni = '';
-
-    let currentView = 'province';
-
-    let currentType = '';
-
-    let breaks = [0, 0, 0, 0];
-
-    let requestCounter = 0;
+    map.setView(
+      [9.8, 118.7],
+      8
+    );
 
 
-    // ======================================================
-    // INFO PANEL
-    // ======================================================
+    addLegend();
 
-    const infoPanel =
+  }
+
+
+  /* ==========================================================
+     LEGEND
+     ========================================================== */
+
+  function addLegend() {
+
+    const legend =
       L.control({
-        position: 'topright'
+        position: 'bottomright'
       });
 
 
-    infoPanel.onAdd =
-      function() {
+    legend.onAdd = function() {
 
-        this._div =
-          L.DomUtil.create(
-            'div',
-            'info'
-          );
-
-        this.update();
-
-        return this._div;
-      };
-
-
-    infoPanel.update =
-      function(props) {
-
-        if (!props) {
-
-          this._div.innerHTML =
-            '<h4>Impormasyon</h4>' +
-            '<span style="color:#888;">' +
-            'I-hover ang mouse sa lugar' +
-            '</span>';
-
-          return;
-        }
-
-
-        this._div.innerHTML =
-
-          '<h4>' +
-          props.Level +
-          ' Profile</h4>' +
-
-          '<b>' +
-          escapeHtml(props.Name) +
-          '</b><br><br>' +
-
-          '<span style="color:green;">' +
-          '✔ Active: ' +
-          Number(props.Active || 0)
-            .toLocaleString() +
-          '</span><br>' +
-
-          '<span style="color:#c0392b;">' +
-          '✘ Inactive: ' +
-          Number(props.Inactive || 0)
-            .toLocaleString() +
-          '</span><br>' +
-
-          '<b>Total: ' +
-          Number(props.Total || 0)
-            .toLocaleString() +
-          '</b>';
-      };
-
-
-    infoPanel.addTo(map);
-
-
-    // ======================================================
-    // BASIC HELPERS
-    // ======================================================
-
-    function showLoader(message) {
-
-      const el =
-        document.getElementById(
-          'loader'
+      const div =
+        L.DomUtil.create(
+          'div',
+          'legend'
         );
 
-      el.textContent =
-        message ||
-        'Kinukuha ang data...';
+      div.innerHTML = `
+        <div class="legend-title">
+          Beneficiary Density
+        </div>
 
-      el.style.display =
-        'block';
+        <div class="legend-item">
+          <span
+            class="legend-box"
+            style="background:#edf8e9"
+          ></span>
+          Low
+        </div>
+
+        <div class="legend-item">
+          <span
+            class="legend-box"
+            style="background:#bae4b3"
+          ></span>
+          Moderate
+        </div>
+
+        <div class="legend-item">
+          <span
+            class="legend-box"
+            style="background:#74c476"
+          ></span>
+          High
+        </div>
+
+        <div class="legend-item">
+          <span
+            class="legend-box"
+            style="background:#238b45"
+          ></span>
+          Very High
+        </div>
+      `;
+
+      L.DomEvent.disableClickPropagation(div);
+
+      return div;
+
+    };
+
+    legend.addTo(map);
+
+  }
+
+
+  /* ==========================================================
+     MAP COLORS
+     ========================================================== */
+
+  function getDensityColor(value) {
+
+    value = toNumber(value);
+
+    if (value > 8000) return '#238b45';
+    if (value > 5000) return '#74c476';
+    if (value > 2500) return '#bae4b3';
+
+    return '#edf8e9';
+
+  }
+
+
+  /* ==========================================================
+     GEOJSON PROPERTY MATCHING
+     ========================================================== */
+
+  function getMunicipalityName(feature) {
+
+    const p =
+      feature.properties || {};
+
+    return String(
+      p.Municipality ??
+      p.MUNICIPALITY ??
+      p.municipality ??
+      p.City ??
+      p.CITY ??
+      p.city ??
+      p.NAME_2 ??
+      p.NAME ??
+      ''
+    ).trim();
+
+  }
+
+
+  function getBarangayName(feature) {
+
+    const p =
+      feature.properties || {};
+
+    return String(
+      p.Barangay ??
+      p.BARANGAY ??
+      p.barangay ??
+      p.NAME_3 ??
+      p.NAME ??
+      ''
+    ).trim();
+
+  }
+
+
+  /* ==========================================================
+     MAP LAYER
+     ========================================================== */
+
+  function renderMunicipalityMap() {
+
+    if (municipalityLayer) {
+      map.removeLayer(
+        municipalityLayer
+      );
     }
 
 
-    function hideLoader() {
+    const dataMap = {};
 
-      document.getElementById(
-        'loader'
-      ).style.display =
-        'none';
-    }
+    municipalityData.forEach(row => {
 
+      dataMap[
+        String(row.Municipality)
+          .trim()
+          .toUpperCase()
+      ] = row;
 
-    function showError(message) {
-
-      hideLoader();
-
-      const box =
-        document.getElementById(
-          'errorBox'
-        );
-
-      const msg =
-        document.getElementById(
-          'errorMessage'
-        );
-
-      msg.textContent =
-        message;
-
-      box.style.display =
-        'block';
-    }
+    });
 
 
-    function hideError() {
+    municipalityLayer =
+      L.geoJSON(
+        municipalityGeoJSON,
+        {
 
-      document.getElementById(
-        'errorBox'
-      ).style.display =
-        'none';
-    }
+          style: feature => {
 
+            const name =
+              getMunicipalityName(
+                feature
+              );
 
-    function escapeHtml(value) {
-
-      return String(value || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
-
-
-    function normalizeName(value) {
-
-      return String(value || '')
-        .toUpperCase()
-        .trim();
-    }
-
-
-    // ======================================================
-    // JSONP
-    // ======================================================
-
-    /**
-     * Calls Apps Script through JSONP.
-     *
-     * This avoids ordinary fetch() CORS problems when the
-     * GitHub Pages domain calls Apps Script.
-     */
-
-    function apiRequest(
-      action,
-      params = {}
-    ) {
-
-      return new Promise(
-        function(resolve, reject) {
-
-          const callbackName =
-            '__palawan4ps_' +
-            Date.now() +
-            '_' +
-            Math.random()
-              .toString(36)
-              .substring(2);
-
-
-          const script =
-            document.createElement(
-              'script'
-            );
-
-
-          let finished = false;
-
-
-          const timeout =
-            setTimeout(
-              function() {
-
-                if (finished) {
-                  return;
-                }
-
-                finished = true;
-
-                cleanup();
-
-                reject(
-                  new Error(
-                    'API request timed out after 20 seconds.'
-                  )
-                );
-
-              },
-              20000
-            );
-
-
-          function cleanup() {
-
-            clearTimeout(
-              timeout
-            );
-
-            try {
-              delete window[
-                callbackName
+            const row =
+              dataMap[
+                name.toUpperCase()
               ];
-            } catch (e) {
-              window[
-                callbackName
-              ] = undefined;
-            }
 
-            if (script.parentNode) {
-              script.parentNode.removeChild(
-                script
-              );
-            }
-          }
+            const total =
+              row
+                ? toNumber(row.Total)
+                : 0;
 
+            const selected =
+              selectedMunicipality &&
+              name.toUpperCase() ===
+              selectedMunicipality
+                .toUpperCase();
 
-          window[callbackName] =
-            function(response) {
+            return {
 
-              if (finished) {
-                return;
-              }
+              fillColor:
+                getDensityColor(total),
 
-              finished = true;
+              weight:
+                selected ? 3 : 1,
 
-              cleanup();
+              opacity: 1,
 
+              color:
+                selected
+                  ? '#111827'
+                  : '#6b7280',
 
-              if (
-                !response ||
-                response.success !== true
-              ) {
+              fillOpacity:
+                selected
+                  ? 0.85
+                  : 0.65
 
-                reject(
-                  new Error(
-                    response &&
-                    response.error
-                      ? response.error
-                      : 'Unknown API error.'
-                  )
-                );
-
-                return;
-              }
-
-
-              resolve(
-                response.data
-              );
             };
 
-
-          script.onerror =
-            function() {
-
-              if (finished) {
-                return;
-              }
-
-              finished = true;
-
-              cleanup();
-
-              reject(
-                new Error(
-                  'Failed to load the Apps Script API.'
-                )
-              );
-            };
-
-
-          const query =
-            new URLSearchParams();
-
-
-          query.set(
-            'api',
-            '1'
-          );
-
-
-          query.set(
-            'action',
-            action
-          );
-
-
-          query.set(
-            'callback',
-            callbackName
-          );
-
-
-          Object.keys(params)
-            .forEach(
-              function(key) {
-
-                if (
-                  params[key] !== undefined &&
-                  params[key] !== null
-                ) {
-
-                  query.set(
-                    key,
-                    params[key]
-                  );
-                }
-              }
-            );
-
-
-          script.src =
-            API_URL +
-            '?' +
-            query.toString();
-
-
-          script.async = true;
-
-
-          document.body.appendChild(
-            script
-          );
-
-        }
-      );
-    }
-
-
-    // ======================================================
-    // CHOROPLETH
-    // ======================================================
-
-    function computeBreaks(
-      data,
-      key
-    ) {
-
-      key =
-        key ||
-        'Active';
-
-
-      const vals =
-        data
-
-          .map(
-            function(row) {
-              return Number(
-                row[key] || 0
-              );
-            }
-          )
-
-          .filter(
-            function(value) {
-              return value > 0;
-            }
-          )
-
-          .sort(
-            function(a, b) {
-              return a - b;
-            }
-          );
-
-
-      const n =
-        vals.length;
-
-
-      if (!n) {
-        return [0, 0, 0, 0];
-      }
-
-
-      return [
-
-        vals[
-          Math.floor(n * 0.25)
-        ] || 0,
-
-        vals[
-          Math.floor(n * 0.50)
-        ] || 0,
-
-        vals[
-          Math.floor(n * 0.75)
-        ] || 0,
-
-        vals[n - 1] || 0
-
-      ];
-    }
-
-
-    function getColor(
-      active,
-      customBreaks
-    ) {
-
-      active =
-        Number(active) || 0;
-
-
-      if (
-        active <= 0
-      ) {
-
-        return '#d4d4d4';
-      }
-
-
-      const b =
-        customBreaks ||
-        breaks;
-
-
-      return active > b[3]
-        ? '#08306b'
-        : active > b[2]
-          ? '#1565c0'
-          : active > b[1]
-            ? '#4292c6'
-            : active > b[0]
-              ? '#9ecae1'
-              : '#deebf7';
-    }
-
-
-    function addLegend() {
-
-      if (legendControl) {
-
-        map.removeControl(
-          legendControl
-        );
-      }
-
-
-      legendControl =
-        L.control({
-          position:
-            'bottomright'
-        });
-
-
-      legendControl.onAdd =
-        function() {
-
-          const div =
-            L.DomUtil.create(
-              'div',
-              'info legend'
-            );
-
-
-          const colors = [
-
-            '#d4d4d4',
-            '#deebf7',
-            '#9ecae1',
-            '#4292c6',
-            '#1565c0',
-            '#08306b'
-
-          ];
-
-
-          const b =
-            breaks;
-
-
-          const labels = [
-
-            'Walang data',
-
-            '1 – ' +
-            Number(
-              b[0] || 0
-            ).toLocaleString(),
-
-            (
-              Number(b[0] || 0) + 1
-            ).toLocaleString() +
-            ' – ' +
-            Number(
-              b[1] || 0
-            ).toLocaleString(),
-
-            (
-              Number(b[1] || 0) + 1
-            ).toLocaleString() +
-            ' – ' +
-            Number(
-              b[2] || 0
-            ).toLocaleString(),
-
-            (
-              Number(b[2] || 0) + 1
-            ).toLocaleString() +
-            ' – ' +
-            Number(
-              b[3] || 0
-            ).toLocaleString(),
-
-            '> ' +
-            Number(
-              b[3] || 0
-            ).toLocaleString()
-
-          ];
-
-
-          div.innerHTML =
-            '<strong>Active HHs</strong>' +
-
-            colors
-              .map(
-                function(color, i) {
-
-                  return (
-                    '<br>' +
-                    '<i style="background:' +
-                    color +
-                    '"></i>' +
-                    labels[i]
-                  );
-                }
-              )
-              .join('');
-
-
-          return div;
-        };
-
-
-      legendControl.addTo(
-        map
-      );
-    }
-
-
-    // ======================================================
-    // LOAD DASHBOARD
-    // ======================================================
-
-    async function loadDashboard() {
-
-      const thisRequest =
-        ++requestCounter;
-
-
-      hideError();
-
-      showLoader(
-        'Kinukuha ang data...'
-      );
-
-
-      try {
-
-        const data =
-          await apiRequest(
-            'municipal'
-          );
-
-
-        if (
-          thisRequest !==
-          requestCounter
-        ) {
-          return;
-        }
-
-
-        if (!Array.isArray(data)) {
-
-          throw new Error(
-            'Invalid municipality data returned by API.'
-          );
-        }
-
-
-        sheetData =
-          data;
-
-
-        breaks =
-          computeBreaks(
-            sheetData,
-            'Active'
-          );
-
-
-        await updateDataAsOf();
-
-
-        await loadMapShapes();
-
-
-        addLegend();
-
-
-        renderProvinceSummary();
-
-
-        hideLoader();
-
-      } catch (error) {
-
-        console.error(
-          'Dashboard load error:',
-          error
-        );
-
-
-        showError(
-          'Hindi ma-load ang dashboard. ' +
-          (error.message ||
-            'Unknown error.')
-        );
-      }
-    }
-
-
-    // ======================================================
-    // LAST UPDATED
-    // ======================================================
-
-    async function updateDataAsOf() {
-
-      try {
-
-        const result =
-          await apiRequest(
-            'lastUpdated'
-          );
-
-
-        const timestamp =
-          result &&
-          result.lastUpdated
-            ? result.lastUpdated
-            : '—';
-
-
-        document.getElementById(
-          'dataAsOf'
-        ).textContent =
-          'Data as of: ' +
-          timestamp;
-
-
-        document.getElementById(
-          'dataAsOfTable'
-        ).textContent =
-          'Data as of: ' +
-          timestamp;
-
-      } catch (error) {
-
-        console.warn(
-          'Could not retrieve timestamp:',
-          error
-        );
-      }
-    }
-
-
-    // ======================================================
-    // MAP SHAPES
-    // ======================================================
-
-    async function loadMapShapes() {
-
-      try {
-
-        const results =
-          await Promise.all([
-
-            fetch(
-              MUNI_GEOJSON_URL
-            ).then(
-              function(response) {
-
-                if (!response.ok) {
-                  throw new Error(
-                    'Municipality GeoJSON HTTP ' +
-                    response.status
-                  );
-                }
-
-                return response.json();
-              }
-            ),
-
-            fetch(
-              HUC_GEOJSON_URL
-            ).then(
-              function(response) {
-
-                if (!response.ok) {
-                  throw new Error(
-                    'HUC GeoJSON HTTP ' +
-                    response.status
-                  );
-                }
-
-                return response.json();
-              }
-            )
-
-          ]);
-
-
-        const muniData =
-          results[0];
-
-        const hucData =
-          results[1];
-
-
-        const palawanFeatures =
-          (
-            muniData.features
-              .concat(
-                hucData.features
-              )
-          )
-          .filter(
-            function(feature) {
-
-              const province =
-                String(
-                  feature.properties.ADM2_EN ||
-                  ''
-                )
-                .toUpperCase()
-                .trim();
-
-
-              const muniName =
-                String(
-                  feature.properties.ADM3_EN ||
-                  feature.properties.NAME_2 ||
-                  ''
-                )
-                .toUpperCase()
-                .trim();
-
-
-              return (
-                province === 'PALAWAN' ||
-                muniName.includes(
-                  'PUERTO PRINCESA'
-                )
-              );
-            }
-          );
-
-
-        if (municipalLayer) {
-
-          map.removeLayer(
-            municipalLayer
-          );
-        }
-
-
-        municipalLayer =
-          L.geoJSON(
-
-            {
-              type:
-                'FeatureCollection',
-
-              features:
-                palawanFeatures
-            },
-
-            {
-              style:
-                stylePolygon,
-
-              onEachFeature:
-                onEachMuniFeature
-            }
-
-          ).addTo(map);
-
-
-        const bounds =
-          municipalLayer.getBounds();
-
-
-        if (
-          bounds &&
-          bounds.isValid()
-        ) {
-
-          map.fitBounds(
-            bounds
-          );
-        }
-
-
-      } catch (error) {
-
-        throw new Error(
-          'Hindi ma-load ang mapa: ' +
-          error.message
-        );
-      }
-    }
-
-
-    // ======================================================
-    // MUNICIPALITY STYLE
-    // ======================================================
-
-    function findMunicipalityData(
-      municipalityName
-    ) {
-
-      const normalized =
-        normalizeName(
-          municipalityName
-        );
-
-
-      return (
-        sheetData.find(
-          function(row) {
-
-            return (
-              normalizeName(
-                row.Municipality
-              ) === normalized
-            );
-          }
-        )
-        || null
-      );
-    }
-
-
-    function stylePolygon(
-      feature
-    ) {
-
-      const name =
-        (
-          feature.properties.ADM3_EN ||
-          feature.properties.NAME_2 ||
-          ''
-        );
-
-
-      const row =
-        findMunicipalityData(
-          name
-        );
-
-
-      return {
-
-        fillColor:
-          getColor(
-            row
-              ? row.Active
-              : 0
-          ),
-
-        weight: 1.5,
-
-        opacity: 1,
-
-        color: '#ffffff',
-
-        fillOpacity: 0.8
-      };
-    }
-
-
-    // ======================================================
-    // MUNICIPALITY EVENTS
-    // ======================================================
-
-    function onEachMuniFeature(
-      feature,
-      layer
-    ) {
-
-      const name =
-        (
-          feature.properties.ADM3_EN ||
-          feature.properties.NAME_2 ||
-          ''
-        );
-
-
-      layer.on(
-        'mouseover',
-        function() {
-
-          layer.setStyle({
-
-            weight: 2.5,
-
-            color: '#333333',
-
-            fillOpacity: 0.9
-          });
-
-
-          const row =
-            findMunicipalityData(
-              name
-            );
-
-
-          infoPanel.update({
-
-            Name:
-              name,
-
-            Level:
-              'Municipality',
-
-            Active:
-              row
-                ? row.Active
-                : 0,
-
-            Inactive:
-              row
-                ? row.Inactive
-                : 0,
-
-            Total:
-              row
-                ? row.Total
-                : 0
-
-          });
-        }
-      );
-
-
-      layer.on(
-        'mouseout',
-        function() {
-
-          if (municipalLayer) {
-
-            municipalLayer.resetStyle(
-              layer
-            );
-          }
-
-          infoPanel.update();
-        }
-      );
-
-
-      layer.on(
-        'click',
-        function() {
-
-          drillDownToBarangays(
-            name
-          );
-        }
-      );
-    }
-
-
-    // ======================================================
-    // BARANGAY DRILL-DOWN
-    // ======================================================
-
-    async function drillDownToBarangays(
-      municipality
-    ) {
-
-      showLoader(
-        'Kinukuha ang barangay data...'
-      );
-
-
-      try {
-
-        const data =
-          await apiRequest(
-            'barangay',
-            {
-              municipality:
-                municipality
-            }
-          );
-
-
-        currentMuni =
-          municipality;
-
-
-        currentBrgyData =
-          Array.isArray(data)
-            ? data
-            : [];
-
-
-        drawBrgy(
-          municipality,
-          currentBrgyData
-        );
-
-
-        document.getElementById(
-          'tablePanel'
-        ).style.display =
-          'flex';
-
-
-        renderSummaryTable();
-
-
-        hideLoader();
-
-
-      } catch (error) {
-
-        hideLoader();
-
-        showError(
-          'Hindi ma-load ang barangay data: ' +
-          error.message
-        );
-      }
-    }
-
-
-    // ======================================================
-    // BARANGAY GEOJSON
-    // ======================================================
-
-    async function drawBrgy(
-      municipality,
-      data
-    ) {
-
-      try {
-
-        if (barangayLayer) {
-
-          map.removeLayer(
-            barangayLayer
-          );
-
-          barangayLayer =
-            null;
-        }
-
-
-        if (!cachedBrgyGeoJson) {
-
-          const response =
-            await fetch(
-              BRGY_GEOJSON_URL
-            );
-
-
-          if (!response.ok) {
-
-            throw new Error(
-              'Barangay GeoJSON HTTP ' +
-              response.status
-            );
-          }
-
-
-          cachedBrgyGeoJson =
-            await response.json();
-        }
-
-
-        renderB(
-          municipality,
-          data,
-          cachedBrgyGeoJson
-        );
-
-
-      } catch (error) {
-
-        showError(
-          'Hindi ma-load ang barangay boundaries: ' +
-          error.message
-        );
-      }
-    }
-
-
-    function renderB(
-      municipality,
-      data,
-      geoJson
-    ) {
-
-      const muniUpper =
-        normalizeName(
-          municipality
-        );
-
-
-      const bBreaks =
-        computeBreaks(
-          data,
-          'Active'
-        );
-
-
-      const filtered =
-        geoJson.features.filter(
-          function(feature) {
-
-            const prop =
-              normalizeName(
-                feature.properties.ADM3_EN ||
-                feature.properties.NAME_2 ||
-                ''
-              );
-
-
-            return (
-              prop === muniUpper
-            );
-          }
-        );
-
-
-      barangayLayer =
-        L.geoJSON(
-
-          {
-            type:
-              'FeatureCollection',
-
-            features:
-              filtered
           },
 
-          {
 
-            style:
-              function(feature) {
+          onEachFeature:
+            (feature, layer) => {
 
-                const brgyName =
-                  normalizeName(
-                    feature.properties.ADM4_EN ||
-                    feature.properties.NAME_3 ||
-                    ''
-                  );
-
-
-                const row =
-                  data.find(
-                    function(item) {
-
-                      return (
-                        normalizeName(
-                          item.Barangay
-                        ) === brgyName
-                      );
-                    }
-                  );
-
-
-                return {
-
-                  fillColor:
-                    getColor(
-                      row
-                        ? row.Active
-                        : 0,
-                      bBreaks
-                    ),
-
-                  weight: 1,
-
-                  color: '#444444',
-
-                  fillOpacity: 0.8
-                };
-              },
-
-
-            onEachFeature:
-              function(feature, layer) {
-
-                const brgyName =
-                  (
-                    feature.properties.ADM4_EN ||
-                    feature.properties.NAME_3 ||
-                    ''
-                  );
-
-
-                layer.on(
-                  'mouseover',
-                  function() {
-
-                    layer.setStyle({
-
-                      weight: 2.5,
-
-                      color: '#111111',
-
-                      fillOpacity: 0.95
-                    });
-
-
-                    const row =
-                      data.find(
-                        function(item) {
-
-                          return (
-                            normalizeName(
-                              item.Barangay
-                            ) ===
-                            normalizeName(
-                              brgyName
-                            )
-                          );
-                        }
-                      );
-
-
-                    infoPanel.update({
-
-                      Name:
-                        brgyName,
-
-                      Level:
-                        'Barangay',
-
-                      Active:
-                        row
-                          ? row.Active
-                          : 0,
-
-                      Inactive:
-                        row
-                          ? row.Inactive
-                          : 0,
-
-                      Total:
-                        row
-                          ? row.Total
-                          : 0
-                    });
-                  }
+              const name =
+                getMunicipalityName(
+                  feature
                 );
 
-
-                layer.on(
-                  'mouseout',
-                  function() {
-
-                    if (barangayLayer) {
-
-                      barangayLayer.resetStyle(
-                        layer
-                      );
-                    }
-
-                    infoPanel.update();
-                  }
-                );
-              }
-
-          }
-
-        ).addTo(map);
-
-
-      const bounds =
-        barangayLayer.getBounds();
-
-
-      if (
-        bounds &&
-        bounds.isValid()
-      ) {
-
-        map.fitBounds(
-          bounds
-        );
-      }
-
-
-      document.getElementById(
-        'backBtn'
-      ).style.display =
-        'block';
-    }
-
-
-    // ======================================================
-    // PROVINCE SUMMARY
-    // ======================================================
-
-    function renderProvinceSummary() {
-
-      currentView =
-        'province';
-
-      currentMuni =
-        '';
-
-      document.getElementById(
-        'tablePanel'
-      ).style.display =
-        'flex';
-
-
-      document.getElementById(
-        'panelTitle'
-      ).textContent =
-        'Palawan Province-Wide Summary';
-
-
-      let active = 0;
-
-      let inactive = 0;
-
-
-      sheetData.forEach(
-        function(row) {
-
-          active +=
-            Number(
-              row.Active || 0
-            );
-
-          inactive +=
-            Number(
-              row.Inactive || 0
-            );
-        }
-      );
-
-
-      const total =
-        active + inactive;
-
-
-      document.getElementById(
-        'btnBackToSummary'
-      ).style.display =
-        'none';
-
-
-      document.getElementById(
-        'tableHead'
-      ).innerHTML =
-
-        '<tr>' +
-
-        '<th>Category</th>' +
-
-        '<th>Count</th>' +
-
-        '</tr>';
-
-
-      document.getElementById(
-        'tableBody'
-      ).innerHTML =
-
-        '<tr class="clickable-row"' +
-        ' onclick="' +
-        'renderMunicipalityBreakdown(\'Active\')' +
-        '">' +
-
-        '<td><strong>Active</strong></td>' +
-
-        '<td>' +
-        active.toLocaleString() +
-        '</td>' +
-
-        '</tr>' +
-
-
-        '<tr class="clickable-row"' +
-        ' onclick="' +
-        'renderMunicipalityBreakdown(\'Inactive\')' +
-        '">' +
-
-        '<td><strong>Inactive</strong></td>' +
-
-        '<td>' +
-        inactive.toLocaleString() +
-        '</td>' +
-
-        '</tr>' +
-
-
-        '<tr>' +
-
-        '<td><strong>Total</strong></td>' +
-
-        '<td><strong>' +
-        total.toLocaleString() +
-        '</strong></td>' +
-
-        '</tr>';
-    }
-
-
-    // ======================================================
-    // MUNICIPALITY BREAKDOWN
-    // ======================================================
-
-    function renderMunicipalityBreakdown(
-      type
-    ) {
-
-      currentView =
-        'municipality';
-
-      currentType =
-        type;
-
-
-      document.getElementById(
-        'panelTitle'
-      ).textContent =
-        'Municipality Breakdown - ' +
-        type;
-
-
-      const backButton =
-        document.getElementById(
-          'btnBackToSummary'
-        );
-
-
-      backButton.style.display =
-        'inline';
-
-
-      backButton.onclick =
-        renderProvinceSummary;
-
-
-      const rows =
-        [...sheetData]
-          .sort(
-            function(a, b) {
-
-              return (
-                Number(
-                  b[type] || 0
-                ) -
-                Number(
-                  a[type] || 0
-                )
-              );
-            }
-          );
-
-
-      document.getElementById(
-        'tableHead'
-      ).innerHTML =
-
-        '<tr>' +
-
-        '<th>Municipality</th>' +
-
-        '<th>' +
-        escapeHtml(type) +
-        '</th>' +
-
-        '</tr>';
-
-
-      document.getElementById(
-        'tableBody'
-      ).innerHTML =
-
-        rows
-          .map(
-            function(row) {
-
-              return (
-
-                '<tr class="clickable-row"' +
-
-                ' data-municipality="' +
-                escapeHtml(
-                  row.Municipality
-                ) +
-                '">' +
-
-                '<td>' +
-                escapeHtml(
-                  row.Municipality
-                ) +
-                '</td>' +
-
-                '<td>' +
-                Number(
-                  row[type] || 0
-                ).toLocaleString() +
-                '</td>' +
-
-                '</tr>'
-              );
-            }
-          )
-          .join('');
-
-
-      document
-        .querySelectorAll(
-          '#tableBody tr[data-municipality]'
-        )
-        .forEach(
-          function(row) {
-
-            row.addEventListener(
-              'click',
-              function() {
-
-                provinceToBarangay(
-                  this.getAttribute(
-                    'data-municipality'
-                  )
-                );
-              }
-            );
-          }
-        );
-    }
-
-
-    // ======================================================
-    // PROVINCE → BARANGAY
-    // ======================================================
-
-    async function provinceToBarangay(
-      municipality
-    ) {
-
-      await drillDownToBarangays(
-        municipality
-      );
-
-
-      const backButton =
-        document.getElementById(
-          'btnBackToSummary'
-        );
-
-
-      backButton.style.display =
-        'inline';
-
-
-      backButton.onclick =
-        function() {
-
-          renderMunicipalityBreakdown(
-            currentType
-          );
-        };
-    }
-
-
-    // ======================================================
-    // BARANGAY SUMMARY
-    // ======================================================
-
-    function renderSummaryTable() {
-
-      currentView =
-        'barangay';
-
-
-      document.getElementById(
-        'panelTitle'
-      ).textContent =
-        currentMuni +
-        ' — Barangay Summary';
-
-
-      document.getElementById(
-        'btnBackToSummary'
-      ).style.display =
-        'inline';
-
-
-      document.getElementById(
-        'btnBackToSummary'
-      ).onclick =
-        function() {
-
-          renderProvinceSummary();
-        };
-
-
-      document.getElementById(
-        'tableHead'
-      ).innerHTML =
-
-        '<tr>' +
-
-        '<th>Barangay</th>' +
-
-        '<th class="clickable-th"' +
-        ' onclick="' +
-        'renderDrilldown(\'Active\')' +
-        '">' +
-
-        'Active ↕' +
-
-        '</th>' +
-
-        '<th class="clickable-th"' +
-        ' onclick="' +
-        'renderDrilldown(\'Inactive\')' +
-        '">' +
-
-        'Inactive ↕' +
-
-        '</th>' +
-
-        '<th>Total</th>' +
-
-        '</tr>';
-
-
-      document.getElementById(
-        'tableBody'
-      ).innerHTML =
-
-        currentBrgyData
-
-          .map(
-            function(row) {
-
-              return (
-
-                '<tr>' +
-
-                '<td>' +
-                escapeHtml(
-                  row.Barangay
-                ) +
-                '</td>' +
-
-                '<td>' +
-                Number(
-                  row.Active || 0
-                ).toLocaleString() +
-                '</td>' +
-
-                '<td>' +
-                Number(
-                  row.Inactive || 0
-                ).toLocaleString() +
-                '</td>' +
-
-                '<td>' +
-                Number(
-                  row.Total || 0
-                ).toLocaleString() +
-                '</td>' +
-
-                '</tr>'
-              );
-            }
-          )
-          .join('');
-    }
-
-
-    // ======================================================
-    // STATUS DRILLDOWN
-    // ======================================================
-
-    function renderDrilldown(
-      type
-    ) {
-
-      const keys =
-        new Set();
-
-
-      currentBrgyData.forEach(
-        function(row) {
-
-          const breakdown =
-            type === 'Active'
-              ? (
-                  row.ActiveBreakdown ||
-                  {}
-                )
-              : (
-                  row.InactiveBreakdown ||
-                  {}
-                );
-
-
-          Object.keys(
-            breakdown
-          ).forEach(
-            function(key) {
-
-              keys.add(
-                key
-              );
-            }
-          );
-        }
-      );
-
-
-      const keyArray =
-        Array.from(keys)
-          .sort();
-
-
-      document.getElementById(
-        'tableHead'
-      ).innerHTML =
-
-        '<tr>' +
-
-        '<th>Barangay</th>' +
-
-        keyArray
-          .map(
-            function(key) {
-
-              return (
-                '<th>' +
-                escapeHtml(key) +
-                '</th>'
-              );
-            }
-          )
-          .join('') +
-
-        '<th>Total</th>' +
-
-        '</tr>';
-
-
-      document.getElementById(
-        'tableBody'
-      ).innerHTML =
-
-        currentBrgyData
-          .map(
-            function(row) {
-
-              const breakdown =
-                type === 'Active'
-                  ? (
-                      row.ActiveBreakdown ||
-                      {}
-                    )
-                  : (
-                      row.InactiveBreakdown ||
-                      {}
-                    );
-
-
-              return (
-
-                '<tr>' +
-
-                '<td>' +
-                escapeHtml(
-                  row.Barangay
-                ) +
-                '</td>' +
-
-                keyArray
-                  .map(
-                    function(key) {
-
-                      return (
-                        '<td>' +
-                        Number(
-                          breakdown[key] ||
-                          0
-                        ).toLocaleString() +
-                        '</td>'
-                      );
-                    }
-                  )
-                  .join('') +
-
-                '<td>' +
-
-                Number(
-                  type === 'Active'
-                    ? row.Active || 0
-                    : row.Inactive || 0
-                ).toLocaleString() +
-
-                '</td>' +
-
-                '</tr>'
-              );
-            }
-          )
-          .join('');
-
-
-      document.getElementById(
-        'btnBackToSummary'
-      ).style.display =
-        'inline';
-
-
-      document.getElementById(
-        'btnBackToSummary'
-      ).onclick =
-        renderSummaryTable;
-    }
-
-
-    // ======================================================
-    // REFRESH
-    // ======================================================
-
-    /**
-     * Refreshes the GitHub frontend data.
-     *
-     * NOTE:
-     * The API cache is 5 minutes.
-     *
-     * We intentionally do NOT expose clearMapCache()
-     * publicly through the API because doing so would allow
-     * anyone to repeatedly invalidate the server cache.
-     */
-
-    async function refreshData() {
-
-      showLoader(
-        'Nagre-refresh ng data...'
-      );
-
-
-      try {
-
-        const data =
-          await apiRequest(
-            'municipal'
-          );
-
-
-        if (!Array.isArray(data)) {
-
-          throw new Error(
-            'Invalid municipality data returned by API.'
-          );
-        }
-
-
-        sheetData =
-          data;
-
-
-        breaks =
-          computeBreaks(
-            sheetData,
-            'Active'
-          );
-
-
-        if (municipalLayer) {
-
-          municipalLayer.setStyle(
-            stylePolygon
-          );
-        }
-
-
-        addLegend();
-
-
-        await updateDataAsOf();
-
-
-        if (
-          currentView ===
-          'province'
-        ) {
-
-          renderProvinceSummary();
-
-        } else if (
-          currentView ===
-          'municipality'
-        ) {
-
-          renderMunicipalityBreakdown(
-            currentType
-          );
-
-        } else if (
-          currentView ===
-          'barangay'
-        ) {
-
-          // Re-fetch current barangay
-          // because the underlying data
-          // may have changed.
-
-          if (currentMuni) {
-
-            const brgy =
-              await apiRequest(
-                'barangay',
+              const row =
+                dataMap[
+                  name.toUpperCase()
+                ];
+
+
+              layer.bindTooltip(
+                `
+                  <strong>${escapeHtml(name)}</strong><br>
+                  Active:
+                  ${formatNumber(row?.Active)}<br>
+                  Inactive:
+                  ${formatNumber(row?.Inactive)}<br>
+                  Total:
+                  ${formatNumber(row?.Total)}
+                `,
                 {
-                  municipality:
-                    currentMuni
+                  sticky: true
                 }
               );
 
 
-            currentBrgyData =
-              Array.isArray(brgy)
-                ? brgy
-                : [];
+              layer.on(
+                'click',
+                () => {
 
+                  selectMunicipality(
+                    name
+                  );
 
-            drawBrgy(
-              currentMuni,
-              currentBrgyData
-            );
+                }
+              );
 
+            }
 
-            renderSummaryTable();
-          }
         }
+      );
 
 
-        document.getElementById(
-          'lastRefreshTime'
-        ).textContent =
-          'Latest refresh: ' +
-          new Date()
-            .toLocaleTimeString();
+    municipalityLayer.addTo(map);
+
+  }
 
 
-        hideLoader();
+  /* ==========================================================
+     HUC LAYER
+     ========================================================== */
 
+  function renderHucLayer() {
 
-      } catch (error) {
+    if (!hucGeoJSON) return;
 
-        hideLoader();
-
-        showError(
-          'Refresh failed: ' +
-          error.message
-        );
-      }
+    if (hucLayer) {
+      map.removeLayer(hucLayer);
     }
 
 
-    // ======================================================
-    // RESET MAP
-    // ======================================================
+    hucLayer =
+      L.geoJSON(
+        hucGeoJSON,
+        {
 
-    function resetMap() {
+          style: {
+            color: '#374151',
+            weight: 2,
+            fillOpacity: 0
+          },
 
-      currentMuni =
-        '';
+          interactive: false
 
-      currentBrgyData =
-        [];
-
-
-      if (barangayLayer) {
-
-        map.removeLayer(
-          barangayLayer
-        );
-
-        barangayLayer =
-          null;
-      }
-
-
-      if (municipalLayer) {
-
-        const bounds =
-          municipalLayer.getBounds();
-
-
-        if (
-          bounds &&
-          bounds.isValid()
-        ) {
-
-          map.fitBounds(
-            bounds
-          );
         }
+      );
+
+
+    hucLayer.addTo(map);
+
+  }
+
+
+  /* ==========================================================
+     SELECT MUNICIPALITY
+     ========================================================== */
+
+  async function selectMunicipality(name) {
+
+    selectedMunicipality =
+      String(name || '').trim();
+
+
+    const select =
+      document.getElementById(
+        'municipalityFilter'
+      );
+
+
+    if (
+      selectedMunicipality &&
+      select.value !== selectedMunicipality
+    ) {
+
+      const option =
+        [...select.options]
+          .find(
+            o =>
+              o.value.toUpperCase() ===
+              selectedMunicipality.toUpperCase()
+          );
+
+      if (option) {
+        select.value =
+          option.value;
       }
 
+    } else if (!selectedMunicipality) {
+
+      select.value = '';
+
+    }
+
+
+    renderMunicipalityMap();
+
+
+    if (!selectedMunicipality) {
 
       document.getElementById(
-        'backBtn'
-      ).style.display =
-        'none';
+        'barangayTitle'
+      ).textContent =
+        'Barangay Breakdown';
 
+      document.getElementById(
+        'barangayList'
+      ).innerHTML =
+        `
+          <div class="empty">
+            Select a municipality to view barangays.
+          </div>
+        `;
 
-      currentView =
-        'province';
+      document.getElementById(
+        'breakdownContainer'
+      ).style.display = 'none';
 
+      return;
 
-      renderProvinceSummary();
-
-
-      infoPanel.update();
     }
 
 
-    // ======================================================
-    // START
-    // ======================================================
+    document.getElementById(
+      'barangayTitle'
+    ).textContent =
+      `Barangay Breakdown: ${selectedMunicipality}`;
 
-    document.addEventListener(
-      'DOMContentLoaded',
-      function() {
 
-        loadDashboard();
+    document.getElementById(
+      'barangayList'
+    ).innerHTML =
+      `
+        <div class="empty">
+          Loading barangays...
+        </div>
+      `;
 
-      }
+
+    try {
+
+      const rows =
+        await loadJsonp(
+          'barangay',
+          {
+            municipality:
+              selectedMunicipality
+          }
+        );
+
+
+      renderBarangayList(rows);
+
+
+    } catch (error) {
+
+      document.getElementById(
+        'barangayList'
+      ).innerHTML =
+        `
+          <div class="empty">
+            ${escapeHtml(error.message)}
+          </div>
+        `;
+
+    }
+
+  }
+
+
+  /* ==========================================================
+     BARANGAY LIST
+     ========================================================== */
+
+  function renderBarangayList(rows) {
+
+    const container =
+      document.getElementById(
+        'barangayList'
+      );
+
+
+    if (!rows || rows.length === 0) {
+
+      container.innerHTML =
+        `
+          <div class="empty">
+            No barangay data found.
+          </div>
+        `;
+
+      return;
+
+    }
+
+
+    container.innerHTML =
+      rows.map(row => {
+
+        return `
+          <div
+            class="barangay-row"
+            onclick='showBarangayBreakdown(${JSON.stringify(row).replace(/'/g, "&#39;")})'
+          >
+
+            <div class="barangay-name">
+              ${escapeHtml(row.Barangay)}
+            </div>
+
+            <div class="barangay-values">
+
+              <span>
+                Active:
+                <strong>
+                  ${formatNumber(row.Active)}
+                </strong>
+              </span>
+
+              <span>
+                Inactive:
+                <strong>
+                  ${formatNumber(row.Inactive)}
+                </strong>
+              </span>
+
+              <span>
+                Total:
+                <strong>
+                  ${formatNumber(row.Total)}
+                </strong>
+              </span>
+
+            </div>
+
+          </div>
+        `;
+
+      }).join('');
+
+  }
+
+
+  /* ==========================================================
+     BARANGAY BREAKDOWN
+     ========================================================== */
+
+  function showBarangayBreakdown(row) {
+
+    const container =
+      document.getElementById(
+        'breakdownContainer'
+      );
+
+    container.style.display =
+      'block';
+
+
+    renderStatusBreakdown(
+      'activeBreakdown',
+      row.ActiveBreakdown
     );
 
-  </script>
+
+    renderStatusBreakdown(
+      'inactiveBreakdown',
+      row.InactiveBreakdown
+    );
+
+  }
+
+
+  function renderStatusBreakdown(
+    elementId,
+    breakdown
+  ) {
+
+    const container =
+      document.getElementById(
+        elementId
+      );
+
+
+    if (
+      !breakdown ||
+      Object.keys(breakdown).length === 0
+    ) {
+
+      container.innerHTML =
+        `
+          <div class="empty">
+            No data.
+          </div>
+        `;
+
+      return;
+
+    }
+
+
+    const entries =
+      Object.entries(breakdown)
+        .sort(
+          (a, b) =>
+            toNumber(b[1]) -
+            toNumber(a[1])
+        );
+
+
+    container.innerHTML =
+      entries.map(
+        ([status, count]) => {
+
+          return `
+            <div class="breakdown-row">
+
+              <span>
+                ${escapeHtml(status)}
+              </span>
+
+              <span>
+                ${formatNumber(count)}
+              </span>
+
+            </div>
+          `;
+
+        }
+      ).join('');
+
+  }
+
+
+  /* ==========================================================
+     MUNICIPALITY LIST
+     ========================================================== */
+
+  function renderMunicipalityList() {
+
+    const container =
+      document.getElementById(
+        'municipalityList'
+      );
+
+
+    if (
+      !municipalityData ||
+      municipalityData.length === 0
+    ) {
+
+      container.innerHTML =
+        `
+          <div class="empty">
+            No municipality data found.
+          </div>
+        `;
+
+      return;
+
+    }
+
+
+    container.innerHTML =
+      municipalityData.map(row => {
+
+        return `
+          <div
+            class="municipality-row"
+            onclick='selectMunicipality(${JSON.stringify(row.Municipality)})'
+          >
+
+            <div class="municipality-name">
+              ${escapeHtml(row.Municipality)}
+            </div>
+
+            <div class="municipality-stats">
+
+              <div>
+                <span class="stat-label">
+                  Active
+                </span>
+
+                <span class="stat-value">
+                  ${formatNumber(row.Active)}
+                </span>
+              </div>
+
+              <div>
+                <span class="stat-label">
+                  Inactive
+                </span>
+
+                <span class="stat-value">
+                  ${formatNumber(row.Inactive)}
+                </span>
+              </div>
+
+              <div>
+                <span class="stat-label">
+                  Total
+                </span>
+
+                <span class="stat-value">
+                  ${formatNumber(row.Total)}
+                </span>
+              </div>
+
+            </div>
+
+          </div>
+        `;
+
+      }).join('');
+
+  }
+
+
+  /* ==========================================================
+     MUNICIPALITY FILTER
+     ========================================================== */
+
+  function populateMunicipalityFilter() {
+
+    const select =
+      document.getElementById(
+        'municipalityFilter'
+      );
+
+
+    select.innerHTML =
+      `
+        <option value="">
+          All Municipalities
+        </option>
+      `;
+
+
+    municipalityData.forEach(row => {
+
+      const option =
+        document.createElement(
+          'option'
+        );
+
+      option.value =
+        row.Municipality;
+
+      option.textContent =
+        row.Municipality;
+
+      select.appendChild(
+        option
+      );
+
+    });
+
+  }
+
+
+  /* ==========================================================
+     PROVINCIAL TOTALS
+     ========================================================== */
+
+  function renderProvincialTotals(
+    totals
+  ) {
+
+    document.getElementById(
+      'totalActive'
+    ).textContent =
+      formatNumber(
+        totals?.Active
+      );
+
+
+    document.getElementById(
+      'totalInactive'
+    ).textContent =
+      formatNumber(
+        totals?.Inactive
+      );
+
+
+    document.getElementById(
+      'totalBeneficiaries'
+    ).textContent =
+      formatNumber(
+        totals?.Total
+      );
+
+  }
+
+
+  /* ==========================================================
+     LAST UPDATED
+     ========================================================== */
+
+  function renderLastUpdated(
+    timestamp
+  ) {
+
+    if (!timestamp) {
+      return;
+    }
+
+
+    const date =
+      new Date(timestamp);
+
+
+    if (
+      Number.isNaN(
+        date.getTime()
+      )
+    ) {
+
+      document.getElementById(
+        'dataAsOf'
+      ).textContent =
+        'Data as of: —';
+
+      return;
+
+    }
+
+
+    document.getElementById(
+      'dataAsOf'
+    ).textContent =
+      'Generated: ' +
+      date.toLocaleString(
+        'en-PH',
+        {
+          dateStyle: 'medium',
+          timeStyle: 'short'
+        }
+      );
+
+  }
+
+
+  /* ==========================================================
+     LOAD DASHBOARD
+     ========================================================== */
+
+  async function loadDashboard() {
+
+    showLoading(true);
+    hideError();
+
+
+    try {
+
+      if (!map) {
+        initializeMap();
+      }
+
+
+      /*
+       * Load API and GeoJSON concurrently.
+       */
+      const [
+        municipal,
+        provincial,
+        lastUpdated,
+        muniGeo,
+        barangayGeo,
+        hucGeo
+      ] =
+        await Promise.all([
+
+          loadJsonp(
+            'municipal'
+          ),
+
+          loadJsonp(
+            'provincial'
+          ),
+
+          loadJsonp(
+            'lastupdated'
+          ),
+
+          municipalityGeoJSON
+            ? Promise.resolve(
+                municipalityGeoJSON
+              )
+            : loadGeoJSON(
+                MUNICIPALITY_GEOJSON
+              ),
+
+          barangayGeoJSON
+            ? Promise.resolve(
+                barangayGeoJSON
+              )
+            : loadGeoJSON(
+                BARANGAY_GEOJSON
+              ),
+
+          hucGeoJSON
+            ? Promise.resolve(
+                hucGeoJSON
+              )
+            : loadGeoJSON(
+                HUC_GEOJSON
+              )
+
+        ]);
+
+
+      municipalityData =
+        Array.isArray(municipal)
+          ? municipal
+          : [];
+
+
+      municipalityGeoJSON =
+        muniGeo;
+
+
+      barangayGeoJSON =
+        barangayGeo;
+
+
+      hucGeoJSON =
+        hucGeo;
+
+
+      renderProvincialTotals(
+        provincial
+      );
+
+
+      renderLastUpdated(
+        lastUpdated
+      );
+
+
+      populateMunicipalityFilter();
+
+
+      renderMunicipalityList();
+
+
+      renderMunicipalityMap();
+
+
+      renderHucLayer();
+
+
+    } catch (error) {
+
+      console.error(
+        'Dashboard loading error:',
+        error
+      );
+
+
+      showError(
+        error.message ||
+        'Unknown error while loading dashboard.'
+      );
+
+
+      /*
+       * Keep map visible even if data fails.
+       */
+      if (!map) {
+        initializeMap();
+      }
+
+    } finally {
+
+      showLoading(false);
+
+    }
+
+  }
+
+
+  /* ==========================================================
+     REFRESH
+     ========================================================== */
+
+  async function refreshDashboard() {
+
+    municipalityGeoJSON = null;
+    barangayGeoJSON = null;
+    hucGeoJSON = null;
+
+    selectedMunicipality = '';
+
+    await loadDashboard();
+
+  }
+
+
+  /* ==========================================================
+     RESET MAP
+     ========================================================== */
+
+  function resetMap() {
+
+    selectedMunicipality = '';
+
+    const select =
+      document.getElementById(
+        'municipalityFilter'
+      );
+
+    select.value = '';
+
+
+    renderMunicipalityMap();
+
+
+    if (municipalityLayer) {
+
+      try {
+
+        map.fitBounds(
+          municipalityLayer.getBounds(),
+          {
+            padding: [20, 20]
+          }
+        );
+
+      } catch (_) {}
+
+    }
+
+
+    document.getElementById(
+      'barangayTitle'
+    ).textContent =
+      'Barangay Breakdown';
+
+
+    document.getElementById(
+      'barangayList'
+    ).innerHTML =
+      `
+        <div class="empty">
+          Select a municipality to view barangays.
+        </div>
+      `;
+
+
+    document.getElementById(
+      'breakdownContainer'
+    ).style.display =
+      'none';
+
+  }
+
+
+  /* ==========================================================
+     LOADING
+     ========================================================== */
+
+  function showLoading(show) {
+
+    document.getElementById(
+      'loadingOverlay'
+    ).style.display =
+      show ? 'flex' : 'none';
+
+  }
+
+
+  /* ==========================================================
+     ERROR
+     ========================================================== */
+
+  function showError(message) {
+
+    const box =
+      document.getElementById(
+        'errorBox'
+      );
+
+    document.getElementById(
+      'errorMessage'
+    ).textContent =
+      message;
+
+
+    box.style.display =
+      'block';
+
+  }
+
+
+  function hideError() {
+
+    document.getElementById(
+      'errorBox'
+    ).style.display =
+      'none';
+
+  }
+
+
+  /* ==========================================================
+     HTML ESCAPE
+     ========================================================== */
+
+  function escapeHtml(value) {
+
+    return String(value ?? '')
+      .replace(
+        /&/g,
+        '&amp;'
+      )
+      .replace(
+        /</g,
+        '&lt;'
+      )
+      .replace(
+        />/g,
+        '&gt;'
+      )
+      .replace(
+        /"/g,
+        '&quot;'
+      )
+      .replace(
+        /'/g,
+        '&#039;'
+      );
+
+  }
+
+
+  /* ==========================================================
+     START
+     ========================================================== */
+
+  document.addEventListener(
+    'DOMContentLoaded',
+    () => {
+
+      loadDashboard();
+
+    }
+  );
+
+</script>
 
 </body>
-
 </html>
