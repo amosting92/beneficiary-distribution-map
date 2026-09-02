@@ -1,3714 +1,1024 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Palawan Beneficiary Dashboard</title>
-
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  >
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      min-height: 100%;
-      font-family:
-        Inter,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Roboto,
-        Arial,
-        sans-serif;
-      background: #f5f7fa;
-      color: #1f2937;
-    }
-
-    body {
-      min-height: 100vh;
-    }
-
-    button,
-    select {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    /* ==========================================================
-       HEADER
-       ========================================================== */
-
-    header {
-      background: #ffffff;
-      border-bottom: 1px solid #e5e7eb;
-      padding: 18px 24px;
-      position: relative;
-      z-index: 1000;
-    }
-
-    .header-inner {
-      max-width: 1500px;
-      margin: 0 auto;
-
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      gap: 20px;
-    }
-
-    .title-wrap h1 {
-      margin: 0;
-
-      font-size: 24px;
-      line-height: 1.2;
-      font-weight: 700;
-
-      color: #111827;
-    }
-
-    .title-wrap p {
-      margin: 5px 0 0;
-
-      color: #6b7280;
-      font-size: 13px;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .header-actions button {
-      border: 1px solid #d1d5db;
-      background: #ffffff;
-      color: #374151;
-
-      border-radius: 8px;
-      padding: 9px 13px;
-
-      transition:
-        background 0.15s ease,
-        border-color 0.15s ease;
-    }
-
-    .header-actions button:hover {
-      background: #f9fafb;
-      border-color: #9ca3af;
-    }
-
-    /* ==========================================================
-       MAIN
-       ========================================================== */
-
-    main {
-      max-width: 1500px;
-      margin: 0 auto;
-
-      padding: 18px 24px 30px;
-    }
-
-    /* ==========================================================
-       ERROR
-       ========================================================== */
-
-    #errorBox {
-      display: none;
-
-      margin-bottom: 18px;
-      padding: 14px 16px;
-
-      border-radius: 10px;
-
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-
-      color: #991b1b;
-
-      font-size: 13px;
-    }
-
-    #errorBox strong {
-      display: block;
-      margin-bottom: 5px;
-    }
-
-    #errorBox button {
-      margin-top: 10px;
-
-      border: 1px solid #2563eb;
-      background: #2563eb;
-      color: #ffffff;
-
-      border-radius: 7px;
-      padding: 8px 12px;
-    }
-
-    #errorBox button:hover {
-      background: #1d4ed8;
-    }
-
-    /* ==========================================================
-       SUMMARY
-       ========================================================== */
-
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-
-      gap: 12px;
-
-      margin-bottom: 18px;
-    }
-
-    .summary-card {
-      background: #ffffff;
-
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-
-      padding: 16px;
-
-      box-shadow:
-        0 1px 2px rgba(0, 0, 0, 0.03);
-    }
-
-    .summary-label {
-      color: #6b7280;
-      font-size: 12px;
-
-      margin-bottom: 7px;
-    }
-
-    .summary-value {
-      color: #111827;
-
-      font-size: 25px;
-      line-height: 1;
-
-      font-weight: 750;
-    }
-
-    .summary-sub {
-      color: #9ca3af;
-      font-size: 11px;
-
-      margin-top: 6px;
-    }
-
-    /* ==========================================================
-       DASHBOARD
-       ========================================================== */
-
-    .dashboard-grid {
-      display: grid;
-
-      grid-template-columns:
-        minmax(0, 1fr)
-        420px;
-
-      gap: 18px;
-    }
-
-    /* ==========================================================
-       CARD
-       ========================================================== */
-
-    .card {
-      background: #ffffff;
-
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-
-      box-shadow:
-        0 1px 2px rgba(0, 0, 0, 0.03);
-    }
-
-    .card-header {
-      min-height: 56px;
-
-      padding: 12px 14px;
-
-      border-bottom: 1px solid #eef0f2;
-
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      gap: 10px;
-    }
-
-    .card-header h2 {
-      margin: 0;
-
-      font-size: 15px;
-      line-height: 1.3;
-
-      font-weight: 700;
-
-      color: #111827;
-    }
-
-    /* ==========================================================
-       MAP
-       ========================================================== */
-
-    .map-container {
-      overflow: hidden;
-    }
-
-    .map-toolbar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    #municipalityFilter {
-      min-width: 190px;
-
-      padding: 8px 10px;
-
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-
-      background: #ffffff;
-      color: #374151;
-
-      outline: none;
-    }
-
-    #municipalityFilter:focus {
-      border-color: #2563eb;
-
-      box-shadow:
-        0 0 0 2px rgba(37, 99, 235, 0.12);
-    }
-
-    #map {
-      width: 100%;
-      height: 650px;
-      background: #dbeafe;
-    }
-
-    /* ==========================================================
-       SIDE COLUMN
-       ========================================================== */
-
-    .side-column {
-      display: flex;
-      flex-direction: column;
-
-      gap: 18px;
-
-      min-width: 0;
-    }
-
-    .data-as-of {
-      color: #6b7280;
-
-      font-size: 10px;
-      font-weight: 400;
-
-      white-space: nowrap;
-    }
-
-    /* ==========================================================
-       MUNICIPALITY LIST
-       ========================================================== */
-
-    .municipality-list {
-      height: 458px;
-      overflow-y: auto;
-
-      padding: 8px 12px;
-    }
-
-    .municipality-row {
-      padding: 11px 4px;
-
-      border-bottom: 1px solid #f0f1f3;
-
-      cursor: pointer;
-
-      transition:
-        background 0.12s ease,
-        padding-left 0.12s ease;
-    }
-
-    .municipality-row:last-child {
-      border-bottom: none;
-    }
-
-    .municipality-row:hover {
-      background: #f9fafb;
-      padding-left: 7px;
-    }
-
-    .municipality-row.selected {
-      background: #eff6ff;
-      padding-left: 7px;
-    }
-
-    .municipality-name {
-      color: #111827;
-
-      font-size: 12px;
-      font-weight: 700;
-
-      margin-bottom: 7px;
-    }
-
-    .municipality-stats {
-      display: grid;
-
-      grid-template-columns:
-        repeat(3, minmax(0, 1fr));
-
-      gap: 8px;
-    }
-
-    .stat-label {
-      display: block;
-
-      color: #9ca3af;
-      font-size: 10px;
-
-      margin-bottom: 2px;
-    }
-
-    .stat-value {
-      display: block;
-
-      color: #374151;
-      font-size: 10px;
-      font-weight: 650;
-    }
-
-    /* ==========================================================
-       BARANGAY
-       ========================================================== */
-
-    .barangay-card-body {
-      padding: 8px 12px 14px;
-    }
-
-    .barangay-list {
-      height: 380px;
-      overflow-y: auto;
-
-      padding: 0 4px;
-    }
-
-    .barangay-row {
-      padding: 11px 2px;
-
-      border-bottom: 1px solid #f0f1f3;
-
-      cursor: pointer;
-
-      transition:
-        background 0.12s ease;
-    }
-
-    .barangay-row:hover {
-      background: #f9fafb;
-    }
-
-    .barangay-row.selected {
-      background: #eff6ff;
-    }
-
-    .barangay-name {
-      color: #111827;
-
-      font-size: 11px;
-      font-weight: 650;
-
-      margin-bottom: 5px;
-    }
-
-    .barangay-values {
-      display: flex;
-      flex-wrap: wrap;
-
-      gap: 12px;
-
-      color: #6b7280;
-
-      font-size: 9px;
-    }
-
-    .barangay-values strong {
-      color: #374151;
-      font-weight: 650;
-    }
-
-    /* ==========================================================
-       BREAKDOWN
-       ========================================================== */
-
-    #breakdownContainer {
-      display: none;
-
-      margin-top: 12px;
-      padding-top: 12px;
-
-      border-top: 1px solid #e5e7eb;
-    }
-
-    .breakdown-section {
-      margin-bottom: 14px;
-    }
-
-    .breakdown-title {
-      color: #374151;
-
-      font-size: 11px;
-      font-weight: 700;
-
-      margin-bottom: 6px;
-    }
-
-    .breakdown-row {
-      display: flex;
-      justify-content: space-between;
-
-      gap: 10px;
-
-      padding: 5px 0;
-
-      border-bottom: 1px solid #f3f4f6;
-
-      font-size: 10px;
-    }
-
-    .breakdown-row span:first-child {
-      color: #6b7280;
-    }
-
-    .breakdown-row span:last-child {
-      color: #374151;
-      font-weight: 650;
-    }
-
-    /* ==========================================================
-       EMPTY
-       ========================================================== */
-
-    .empty {
-      padding: 25px 10px;
-
-      text-align: center;
-
-      color: #9ca3af;
-
-      font-size: 11px;
-    }
-
-    /* ==========================================================
-       LOADING
-       ========================================================== */
-
-    #loadingOverlay {
-      position: fixed;
-      inset: 0;
-
-      z-index: 99999;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      flex-direction: column;
-
-      gap: 12px;
-
-      background:
-        rgba(255, 255, 255, 0.95);
-    }
-
-    .spinner {
-      width: 36px;
-      height: 36px;
-
-      border: 3px solid #e5e7eb;
-      border-top-color: #2563eb;
-
-      border-radius: 50%;
-
-      animation:
-        spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    .loading-text {
-      color: #4b5563;
-      font-size: 13px;
-    }
-
-    /* ==========================================================
-       MAP POPUP
-       ========================================================== */
-
-    .map-popup {
-      min-width: 175px;
-    }
-
-    .map-popup-title {
-      margin-bottom: 8px;
-
-      color: #111827;
-
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .map-popup-row {
-      display: flex;
-      justify-content: space-between;
-
-      gap: 18px;
-
-      font-size: 11px;
-
-      margin: 4px 0;
-    }
-
-    .map-popup-row span:first-child {
-      color: #6b7280;
-    }
-
-    .map-popup-row span:last-child {
-      color: #111827;
-      font-weight: 650;
-    }
-
-    /* ==========================================================
-       LEGEND
-       ========================================================== */
-
-    .legend {
-      background: #ffffff;
-
-      padding: 9px 11px;
-
-      border-radius: 8px;
-
-      box-shadow:
-        0 1px 5px rgba(0, 0, 0, 0.18);
-
-      font-size: 10px;
-      line-height: 17px;
-    }
-
-    .legend-title {
-      color: #111827;
-
-      font-weight: 700;
-
-      margin-bottom: 3px;
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-
-      gap: 6px;
-    }
-
-    .legend-box {
-      width: 13px;
-      height: 13px;
-
-      border-radius: 2px;
-
-      border:
-        1px solid rgba(0, 0, 0, 0.12);
-    }
-
-    /* ==========================================================
-       RESPONSIVE
-       ========================================================== */
-
-    @media (max-width: 1100px) {
-
-      .dashboard-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .side-column {
-        display: grid;
-
-        grid-template-columns:
-          repeat(2, minmax(0, 1fr));
-
-        align-items: start;
-      }
-
-      #map {
-        height: 580px;
-      }
-    }
-
-    @media (max-width: 700px) {
-
-      header {
-        padding: 15px;
-      }
-
-      .header-inner {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .header-actions {
-        width: 100%;
-      }
-
-      .header-actions button {
-        flex: 1;
-      }
-
-      main {
-        padding: 12px;
-      }
-
-      .summary-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .side-column {
-        display: flex;
-      }
-
-      .card-header {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .map-toolbar {
-        width: 100%;
-      }
-
-      #municipalityFilter {
-        width: 100%;
-      }
-
-      #map {
-        height: 480px;
-      }
+    html, body { margin:0; padding:0; height:100%; font-family:"Segoe UI",Tahoma,Geneva,sans-serif; }
+    #map { height:100vh; width:100vw; }
+
+    .floating-title {
+      position:absolute; top:15px; left:50%; transform:translateX(-50%);
+      z-index:1000; background:rgba(255,255,255,.95); padding:10px 25px;
+      border-radius:50px; box-shadow:0 4px 15px rgba(0,0,0,.2);
+      text-align:center; pointer-events:none; white-space:nowrap;
+    }
+    .floating-title h1 { margin:0; font-size:20px; color:#333; text-transform:uppercase; letter-spacing:1px; }
+    .floating-title p { margin:0; font-size:12px; color:#666; }
+
+    .info {
+      padding:12px 16px; background:rgba(255,255,255,.95);
+      box-shadow:0 0 15px rgba(0,0,0,.2); border-radius:8px; min-width:220px;
+    }
+    .info h4 { margin:0 0 8px; color:#333; font-size:16px; border-bottom:1px solid #ddd; padding-bottom:4px; }
+
+    .legend { line-height:22px; font-size:12px; }
+    .legend strong { display:block; margin-bottom:6px; font-size:13px; }
+    .legend i { width:16px; height:16px; float:left; margin-right:8px; margin-top:3px; opacity:.85; border-radius:2px; }
+
+    #loader {
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      z-index:9999; background:white; padding:20px 30px; border-radius:8px;
+      box-shadow:0 4px 15px rgba(0,0,0,.2); font-weight:bold; text-align:center;
+    }
+
+    #errorToast {
+      position:absolute; top:80px; left:50%; transform:translateX(-50%);
+      z-index:10000; background:#c0392b; color:white; padding:10px 20px;
+      border-radius:6px; display:none; font-size:13px;
+      box-shadow:0 4px 10px rgba(0,0,0,.2); max-width:520px; text-align:center;
+    }
+
+    #backBtn {
+      position:absolute; top:80px; left:20px; z-index:9999;
+      padding:10px 20px; background:#0056b3; color:white;
+      border:none; border-radius:4px; font-size:14px; cursor:pointer; display:none;
+    }
+
+    #tablePanel {
+      position:absolute; bottom:0; left:0; width:100%; max-height:40vh;
+      background:white; z-index:9998; box-shadow:0 -4px 15px rgba(0,0,0,.2);
+      display:none; flex-direction:column; border-top:3px solid #0056b3;
+    }
+    .table-header {
+      padding:10px 20px; background:#f8f9fa; border-bottom:1px solid #ddd;
+      display:flex; justify-content:space-between; align-items:flex-start;
+    }
+    .refresh-info { font-size:12px; color:#666; margin-top:2px; }
+    .btn-refresh { cursor:pointer; color:#0056b3; font-weight:bold; margin-left:10px; }
+    .table-container { overflow-y:auto; flex-grow:1; }
+    table { width:100%; border-collapse:collapse; text-align:left; font-size:13px; }
+    th, td { padding:8px 12px; border-bottom:1px solid #eee; }
+    th { position:sticky; top:0; background:#fff; z-index:10; border-bottom:2px solid #ccc; }
+    .clickable-th { color:#0056b3; cursor:pointer; text-decoration:underline; }
+
+    @media(max-width:700px){
+      .floating-title { top:8px; padding:8px 14px; white-space:normal; width:75%; }
+      .floating-title h1 { font-size:16px; }
+      .floating-title p { font-size:10px; }
+      .info { min-width:180px; }
+      #tablePanel { max-height:45vh; }
     }
   </style>
 </head>
 
 <body>
-
-  <!-- ========================================================
-       LOADING
-       ======================================================== -->
-
-  <div id="loadingOverlay">
-
-    <div class="spinner"></div>
-
-    <div class="loading-text">
-      Loading Beneficiary Distribution Map...
-    </div>
-
+  <div class="floating-title">
+    <h1>4Ps Beneficiary Dashboard</h1>
+    <p>Palawan Provincial Operations Office</p>
+    <p id="dataAsOf">Data as of: September 2, 2026</p>
   </div>
 
+  <div id="loader">Kinukuha ang data...</div>
+  <div id="errorToast"></div>
+  <button id="backBtn" onclick="resetMap()">⬅ Bumalik sa Buong Palawan</button>
 
-  <!-- ========================================================
-       APP
-       ======================================================== -->
+  <div id="map"></div>
 
-  <div class="app">
-
-    <!-- ======================================================
-         HEADER
-         ====================================================== -->
-
-    <header>
-
-      <div class="header-inner">
-
-        <div class="title-wrap">
-
-          <h1>
-            Palawan Beneficiary Dashboard
-          </h1>
-
-          <p>
-            4Ps Beneficiary Distribution by Municipality and Barangay
-          </p>
-
+  <div id="tablePanel">
+    <div class="table-header">
+      <div>
+        <h3 id="panelTitle" style="margin:0 0 4px;">Municipality Data</h3>
+        <div class="refresh-info">
+          <span id="dataAsOfTable">Data as of: September 2, 2026</span> |
+          <span id="lastRefreshTime">Latest refresh: Just now</span>
         </div>
-
-
-        <div class="header-actions">
-
-          <button
-            type="button"
-            onclick="refreshDashboard()"
-          >
-            Refresh
-          </button>
-
-          <button
-            type="button"
-            onclick="resetMap()"
-          >
-            Reset Map
-          </button>
-
-        </div>
-
-      </div>
-
-    </header>
-
-
-    <!-- ======================================================
-         MAIN
-         ====================================================== -->
-
-    <main>
-
-      <!-- ERROR -->
-
-      <div id="errorBox">
-
-        <strong>
-          Unable to load dashboard
-        </strong>
-
-        <span id="errorMessage"></span>
-
-        <br>
-
-        <button
-          type="button"
-          onclick="refreshDashboard()"
-        >
-          Try Again
+        <button id="btnBackToSummary"
+          style="display:none; cursor:pointer; border:none; background:none; color:#0056b3; padding:4px 0 0; font-size:13px;">
+          ⬅ Bumalik sa Summary
         </button>
-
       </div>
-
-
-      <!-- ====================================================
-           SUMMARY
-           ==================================================== -->
-
-      <div class="summary-grid">
-
-        <div class="summary-card">
-
-          <div class="summary-label">
-            Active Beneficiaries
-          </div>
-
-          <div
-            class="summary-value"
-            id="totalActive"
-          >
-            —
-          </div>
-
-          <div class="summary-sub">
-            Provincial total
-          </div>
-
-        </div>
-
-
-        <div class="summary-card">
-
-          <div class="summary-label">
-            Inactive Beneficiaries
-          </div>
-
-          <div
-            class="summary-value"
-            id="totalInactive"
-          >
-            —
-          </div>
-
-          <div class="summary-sub">
-            Provincial total
-          </div>
-
-        </div>
-
-
-        <div class="summary-card">
-
-          <div class="summary-label">
-            Total Beneficiaries
-          </div>
-
-          <div
-            class="summary-value"
-            id="totalBeneficiaries"
-          >
-            —
-          </div>
-
-          <div class="summary-sub">
-            Active + inactive
-          </div>
-
-        </div>
-
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="btn-refresh" onclick="refreshData()">🔄 I-refresh</span>
+        <button onclick="document.getElementById('tablePanel').style.display='none'"
+          style="border:none; background:none; font-size:18px; cursor:pointer;">✖</button>
       </div>
-
-
-      <!-- ====================================================
-           DASHBOARD GRID
-           ==================================================== -->
-
-      <div class="dashboard-grid">
-
-
-        <!-- ==================================================
-             MAP
-             ================================================== -->
-
-        <div class="card map-container">
-
-          <div class="card-header">
-
-            <h2>
-              Beneficiary Distribution Map
-            </h2>
-
-            <div class="map-toolbar">
-
-              <select
-                id="municipalityFilter"
-                onchange="handleMunicipalitySelect(this.value)"
-              >
-
-                <option value="">
-                  All Municipalities
-                </option>
-
-              </select>
-
-            </div>
-
-          </div>
-
-          <div id="map"></div>
-
-        </div>
-
-
-        <!-- ==================================================
-             SIDE COLUMN
-             ================================================== -->
-
-        <div class="side-column">
-
-
-          <!-- =================================================
-               MUNICIPALITY BREAKDOWN
-               ================================================= -->
-
-          <div class="card">
-
-            <div class="card-header">
-
-              <h2>
-                Municipality Breakdown
-              </h2>
-
-              <span
-                class="data-as-of"
-                id="dataAsOf"
-              >
-                Generated: —
-              </span>
-
-            </div>
-
-
-            <div
-              class="municipality-list"
-              id="municipalityList"
-            >
-
-              <div class="empty">
-                Loading...
-              </div>
-
-            </div>
-
-          </div>
-
-
-          <!-- =================================================
-               BARANGAY BREAKDOWN
-               ================================================= -->
-
-          <div class="card">
-
-            <div class="card-header">
-
-              <h2 id="barangayTitle">
-                Barangay Breakdown
-              </h2>
-
-            </div>
-
-
-            <div class="barangay-card-body">
-
-              <div
-                class="barangay-list"
-                id="barangayList"
-              >
-
-                <div class="empty">
-                  Select a municipality to view barangays.
-                </div>
-
-              </div>
-
-
-              <div id="breakdownContainer">
-
-                <div class="breakdown-section">
-
-                  <div class="breakdown-title">
-                    Active Status Breakdown
-                  </div>
-
-                  <div id="activeBreakdown"></div>
-
-                </div>
-
-
-                <div class="breakdown-section">
-
-                  <div class="breakdown-title">
-                    Inactive Status Breakdown
-                  </div>
-
-                  <div id="inactiveBreakdown"></div>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </main>
-
+    </div>
+    <div class="table-container">
+      <table id="dataTable">
+        <thead id="tableHead"></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
   </div>
 
-
-  <!-- ========================================================
-       LEAFLET
-       ======================================================== -->
-
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-  ></script>
-
-
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-
-    /* ========================================================
-       CONFIGURATION
-       ======================================================== */
-
-    const API_URL =
-      'https://script.google.com/macros/s/AKfycbxIijDqYshUkBNLnJ9cprKuQ_kuwd67VH8I5knVzc0dzak866YhPIqEitHin3vJcn7o/exec';
-
-
-    const MUNICIPALITY_GEOJSON =
-      'https://raw.githubusercontent.com/amosting92/beneficiary-distribution-map/main/assets/municipalities.geojson';
-
-
-    const HUC_GEOJSON =
-      'https://raw.githubusercontent.com/amosting92/beneficiary-distribution-map/main/assets/highly_urbanized_cities.geojson';
-
-
-    /* ========================================================
-       PALAWAN MAP EXTENT
-       ======================================================== */
-
-    const PALAWAN_BOUNDS =
-      L.latLngBounds(
-        [7.5, 114.5],
-        [13.5, 121.5]
-      );
-
-
-    const PALAWAN_CENTER =
-      [10.0, 118.8];
-
-
-    const PALAWAN_DEFAULT_ZOOM =
-      8;
-
-
-    /* ========================================================
-       STATE
-       ======================================================== */
-
-    let map = null;
-
-    let municipalityLayer = null;
-
-    let hucLayer = null;
-
-    let municipalityData = [];
-
-    let selectedMunicipality = '';
-
-    let selectedBarangay = '';
-
-    let municipalityGeoJSON = null;
-
-    let hucGeoJSON = null;
-
-    let currentMunicipalityRows = [];
-
-    let mapInitialized = false;
-
-
-    /* ========================================================
-       NORMALIZE MUNICIPALITY NAME
-       ======================================================== */
-
-    function normalizeMunicipalityName(
-      value
-    ) {
-
-      let name =
-        String(value || '')
-          .trim()
-          .toUpperCase();
-
-
-      /*
-       * Normalize common punctuation.
-       */
-
-      name =
-        name
-          .replace(/[.,'’`]/g, '')
-          .replace(/-/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim();
-
-
-      /*
-       * Remove common geographic labels
-       * that may exist in GeoJSON but not
-       * in the MapData sheet.
-       */
-
-      name =
-        name
-          .replace(/^MUNICIPALITY OF /, '')
-          .replace(/^MUNICIPALITY /, '')
-          .replace(/^MUN OF /, '')
-          .replace(/^MUN /, '')
-          .replace(/^CITY OF /, '')
-          .replace(/^CITY /, '')
-          .replace(/ MUNICIPALITY$/, '')
-          .replace(/ CITY$/, '')
-          .trim();
-
-
-      /*
-       * Special handling for Puerto Princesa.
-       */
-
-      if (
-        name.includes('PUERTO PRINCESA')
-      ) {
-
-        return 'PUERTO PRINCESA';
-
-      }
-
-
-      return name;
-
-    }
-
-
-    /* ========================================================
-       NUMBER
-       ======================================================== */
-
-    function toNumber(
-      value
-    ) {
-
-      if (
-        value === null ||
-        value === undefined ||
-        value === ''
-      ) {
-
-        return 0;
-
-      }
-
-
-      const cleaned =
-        String(value)
-          .replace(/,/g, '')
-          .trim();
-
-
-      const number =
-        Number(cleaned);
-
-
-      return Number.isFinite(number)
-        ? number
-        : 0;
-
-    }
-
-
-    function formatNumber(
-      value
-    ) {
-
-      return toNumber(value)
-        .toLocaleString(
-          'en-US'
-        );
-
-    }
-
-
-    /* ========================================================
-       ESCAPE HTML
-       ======================================================== */
-
-    function escapeHtml(
-      value
-    ) {
-
-      return String(
-        value ?? ''
-      )
-        .replace(
-          /&/g,
-          '&amp;'
-        )
-        .replace(
-          /</g,
-          '&lt;'
-        )
-        .replace(
-          />/g,
-          '&gt;'
-        )
-        .replace(
-          /"/g,
-          '&quot;'
-        )
-        .replace(
-          /'/g,
-          '&#039;'
-        );
-
-    }
-
-
-    /* ========================================================
-       JSONP API
-       ======================================================== */
-
-    function loadJsonp(
-      action,
-      params = {}
-    ) {
-
-      return new Promise(
-        (
-          resolve,
-          reject
-        ) => {
-
-          const callbackName =
-            'jsonp_' +
-            Date.now() +
-            '_' +
-            Math.random()
-              .toString(36)
-              .substring(2);
-
-
-          const script =
-            document.createElement(
-              'script'
-            );
-
-
-          const query =
-            new URLSearchParams({
-              api: '1',
-              action,
-              callback:
-                callbackName,
-              ...params
-            });
-
-
-          let finished =
-            false;
-
-
-          const timeout =
-            setTimeout(
-              () => {
-
-                if (
-                  finished
-                ) {
-                  return;
-                }
-
-
-                finished =
-                  true;
-
-
-                cleanup();
-
-
-                reject(
-                  new Error(
-                    'API request timed out after 15 seconds.'
-                  )
-                );
-
-              },
-              15000
-            );
-
-
-          function cleanup() {
-
-            clearTimeout(
-              timeout
-            );
-
-
-            try {
-
-              delete window[
-                callbackName
-              ];
-
-            } catch (_) {
-
-              window[
-                callbackName
-              ] = undefined;
-
-            }
-
-
-            if (
-              script.parentNode
-            ) {
-
-              script.parentNode
-                .removeChild(
-                  script
-                );
-
-            }
-
-          }
-
-
-          window[
-            callbackName
-          ] =
-            response => {
-
-              if (
-                finished
-              ) {
-                return;
-              }
-
-
-              finished =
-                true;
-
-
-              cleanup();
-
-
-              if (
-                !response ||
-                response.success !== true
-              ) {
-
-                reject(
-                  new Error(
-                    response?.error ||
-                    'Unknown API error.'
-                  )
-                );
-
-                return;
-
-              }
-
-
-              resolve(
-                response.data
-              );
-
-            };
-
-
-          script.onerror =
-            () => {
-
-              if (
-                finished
-              ) {
-                return;
-              }
-
-
-              finished =
-                true;
-
-
-              cleanup();
-
-
-              reject(
-                new Error(
-                  'Failed to load Apps Script API.'
-                )
-              );
-
-            };
-
-
-          script.src =
-            API_URL +
-            '?' +
-            query.toString();
-
-
-          document.body.appendChild(
-            script
-          );
-
-        }
-      );
-
-    }
-
-
-    /* ========================================================
-       GEOJSON
-       ======================================================== */
-
-    async function loadGeoJSON(
-      url
-    ) {
-
-      const response =
-        await fetch(url);
-
-
-      if (
-        !response.ok
-      ) {
-
-        throw new Error(
-          `GeoJSON request failed: ${response.status}`
-        );
-
-      }
-
-
-      return await response.json();
-
-    }
-
-
-    /* ========================================================
-       GEOJSON MUNICIPALITY NAME
-       ======================================================== */
-
-    function getMunicipalityName(
-      feature
-    ) {
-
-      const properties =
-        feature?.properties || {};
-
-
-      /*
-       * Check the most likely
-       * property names first.
-       */
-
-      const candidates = [
-
-        properties.Municipality,
-        properties.MUNICIPALITY,
-        properties.municipality,
-
-        properties.MunName,
-        properties.MUN_NAME,
-        properties.MUNNAME,
-
-        properties.MUNICIPALI,
-
-        properties.City,
-        properties.CITY,
-        properties.city,
-
-        properties.CityName,
-        properties.CITY_NAME,
-
-        properties.NAME_2,
-        properties.NAME2,
-
-        properties.NAME,
-        properties.name
-
-      ];
-
-
-      for (
-        const value
-        of candidates
-      ) {
-
-        if (
-          value !== null &&
-          value !== undefined &&
-          String(value).trim() !== ''
-        ) {
-
-          return String(
-            value
-          ).trim();
-
-        }
-
-      }
-
-
-      return '';
-
-    }
-
-
-    /* ========================================================
-       BUILD MUNICIPALITY DATA LOOKUP
-       ======================================================== */
-
-    function buildMunicipalityLookup() {
-
-      const lookup = {};
-
-
-      municipalityData.forEach(
-        row => {
-
-          const key =
-            normalizeMunicipalityName(
-              row.Municipality
-            );
-
-
-          if (!key) {
-            return;
-          }
-
-
-          lookup[key] = {
-
-            Municipality:
-              row.Municipality,
-
-            Active:
-              toNumber(
-                row.Active
-              ),
-
-            Inactive:
-              toNumber(
-                row.Inactive
-              ),
-
-            Total:
-              toNumber(
-                row.Total
-              )
-
-          };
-
-        }
-      );
-
-
-      return lookup;
-
-    }
-
-
-    /* ========================================================
-       FIND MUNICIPALITY DATA
-       ======================================================== */
-
-    function findMunicipalityData(
-      geoJsonName,
-      lookup
-    ) {
-
-      const normalized =
-        normalizeMunicipalityName(
-          geoJsonName
-        );
-
-
-      /*
-       * Direct normalized match.
-       */
-
-      if (
-        lookup[normalized]
-      ) {
-
-        return lookup[
-          normalized
-        ];
-
-      }
-
-
-      /*
-       * Fallback:
-       * compare without spaces.
-       */
-
-      const compact =
-        normalized.replace(
-          /\s+/g,
-          ''
-        );
-
-
-      for (
-        const key
-        of Object.keys(
-          lookup
-        )
-      ) {
-
-        if (
-          key.replace(
-            /\s+/g,
-            ''
-          ) === compact
-        ) {
-
-          return lookup[key];
-
-        }
-
-      }
-
-
-      /*
-       * Final fallback:
-       * contains comparison.
-       */
-
-      for (
-        const key
-        of Object.keys(
-          lookup
-        )
-      ) {
-
-        if (
-          key.includes(
-            normalized
-          ) ||
-          normalized.includes(
-            key
-          )
-        ) {
-
-          return lookup[key];
-
-        }
-
-      }
-
-
-      return null;
-
-    }
-
-
-    /* ========================================================
-       INITIALIZE MAP
-       ======================================================== */
-
-    function initializeMap() {
-
-      if (
-        mapInitialized
-      ) {
-
-        return;
-
-      }
-
-
-      map =
-        L.map(
-          'map',
-          {
-
-            zoomControl:
-              true,
-
-            preferCanvas:
-              true,
-
-            maxBounds:
-              PALAWAN_BOUNDS,
-
-            maxBoundsViscosity:
-              1.0,
-
-            minZoom:
-              7,
-
-            maxZoom:
-              16
-
-          }
-        );
-
-
-      /* ------------------------------------------------------
-         HUC PANE
-         ------------------------------------------------------ */
-
-      map.createPane(
-        'hucPane'
-      );
-
-
-      map.getPane(
-        'hucPane'
-      ).style.zIndex =
-        400;
-
-
-      /* ------------------------------------------------------
-         MUNICIPALITY PANE
-         ------------------------------------------------------ */
-
-      map.createPane(
-        'municipalityPane'
-      );
-
-
-      map.getPane(
-        'municipalityPane'
-      ).style.zIndex =
-        450;
-
-
-      /* ------------------------------------------------------
-         BASEMAP
-         ------------------------------------------------------ */
-
-      L.tileLayer(
-        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        {
-
-          maxZoom:
-            19,
-
-          attribution:
-            '&copy; OpenStreetMap contributors'
-
-        }
-      ).addTo(
-        map
-      );
-
-
-      /* ------------------------------------------------------
-         PALAWAN INITIAL VIEW
-         ------------------------------------------------------ */
-
-      map.fitBounds(
-        PALAWAN_BOUNDS,
-        {
-          padding:
-            [10, 10]
-        }
-      );
-
-
-      addLegend();
-
-
-      mapInitialized =
-        true;
-
-    }
-
-
-    /* ========================================================
-       LEGEND
-       ======================================================== */
-
-    function addLegend() {
-
-      const legend =
-        L.control({
-          position:
-            'bottomright'
-        });
-
-
-      legend.onAdd =
-        function() {
-
-          const div =
-            L.DomUtil.create(
-              'div',
-              'legend'
-            );
-
-
-          div.innerHTML = `
-
-            <div class="legend-title">
-              Beneficiary Density
-            </div>
-
-            <div class="legend-item">
-
-              <span
-                class="legend-box"
-                style="background:#edf8e9"
-              ></span>
-
-              Low
-
-            </div>
-
-            <div class="legend-item">
-
-              <span
-                class="legend-box"
-                style="background:#bae4b3"
-              ></span>
-
-              Moderate
-
-            </div>
-
-            <div class="legend-item">
-
-              <span
-                class="legend-box"
-                style="background:#74c476"
-              ></span>
-
-              High
-
-            </div>
-
-            <div class="legend-item">
-
-              <span
-                class="legend-box"
-                style="background:#238b45"
-              ></span>
-
-              Very High
-
-            </div>
-
-          `;
-
-
-          L.DomEvent
-            .disableClickPropagation(
-              div
-            );
-
-
-          return div;
-
-        };
-
-
-      legend.addTo(
-        map
-      );
-
-    }
-
-
-    /* ========================================================
-       DENSITY COLOR
-       ======================================================== */
-
-    function getDensityColor(
-      value
-    ) {
-
-      const total =
-        toNumber(
-          value
-        );
-
-
-      if (
-        total > 8000
-      ) {
-
-        return '#238b45';
-
-      }
-
-
-      if (
-        total > 5000
-      ) {
-
-        return '#74c476';
-
-      }
-
-
-      if (
-        total > 2500
-      ) {
-
-        return '#bae4b3';
-
-      }
-
-
-      return '#edf8e9';
-
-    }
-
-
-    /* ========================================================
-       RENDER MUNICIPALITY MAP
-       ======================================================== */
-
-    function renderMunicipalityMap() {
-
-      if (
-        !municipalityGeoJSON
-      ) {
-
-        return;
-
-      }
-
-
-      if (
-        municipalityLayer
-      ) {
-
-        map.removeLayer(
-          municipalityLayer
-        );
-
-        municipalityLayer =
-          null;
-
-      }
-
-
-      const lookup =
-        buildMunicipalityLookup();
-
-
-      municipalityLayer =
-        L.geoJSON(
-          municipalityGeoJSON,
-          {
-
-            pane:
-              'municipalityPane',
-
-            interactive:
-              true,
-
-
-            style:
-              function(
-                feature
-              ) {
-
-                const geoName =
-                  getMunicipalityName(
-                    feature
-                  );
-
-
-                const row =
-                  findMunicipalityData(
-                    geoName,
-                    lookup
-                  );
-
-
-                const total =
-                  row
-                    ? row.Total
-                    : 0;
-
-
-                const selected =
-                  selectedMunicipality &&
-                  normalizeMunicipalityName(
-                    geoName
-                  ) ===
-                  normalizeMunicipalityName(
-                    selectedMunicipality
-                  );
-
-
-                return {
-
-                  fillColor:
-                    getDensityColor(
-                      total
-                    ),
-
-                  color:
-                    selected
-                      ? '#111827'
-                      : '#4b5563',
-
-                  weight:
-                    selected
-                      ? 3
-                      : 1.2,
-
-                  opacity:
-                    1,
-
-                  fillOpacity:
-                    selected
-                      ? 0.85
-                      : 0.65
-
-                };
-
-              },
-
-
-            onEachFeature:
-              function(
-                feature,
-                layer
-              ) {
-
-                const geoName =
-                  getMunicipalityName(
-                    feature
-                  );
-
-
-                const row =
-                  findMunicipalityData(
-                    geoName,
-                    lookup
-                  );
-
-
-                /*
-                 * IMPORTANT:
-                 *
-                 * The hover tooltip uses
-                 * the matched API row.
-                 *
-                 * It does NOT rely on
-                 * GeoJSON having the
-                 * beneficiary numbers.
-                 */
-
-                const displayName =
-                  row
-                    ? row.Municipality
-                    : geoName;
-
-
-                const active =
-                  row
-                    ? row.Active
-                    : 0;
-
-
-                const inactive =
-                  row
-                    ? row.Inactive
-                    : 0;
-
-
-                const total =
-                  row
-                    ? row.Total
-                    : 0;
-
-
-                /* ----------------------------------------------
-                   TOOLTIP
-                   ---------------------------------------------- */
-
-                layer.bindTooltip(
-                  `
-                    <strong>
-                      ${escapeHtml(
-                        displayName
-                      )}
-                    </strong>
-
-                    <br>
-
-                    Active:
-                    ${formatNumber(
-                      active
-                    )}
-
-                    <br>
-
-                    Inactive:
-                    ${formatNumber(
-                      inactive
-                    )}
-
-                    <br>
-
-                    Total:
-                    ${formatNumber(
-                      total
-                    )}
-                  `,
-                  {
-                    sticky:
-                      true,
-
-                    direction:
-                      'auto',
-
-                    opacity:
-                      0.96
-                  }
-                );
-
-
-                /* ----------------------------------------------
-                   POPUP
-                   ---------------------------------------------- */
-
-                layer.bindPopup(
-                  `
-                    <div class="map-popup">
-
-                      <div class="map-popup-title">
-                        ${escapeHtml(
-                          displayName
-                        )}
-                      </div>
-
-                      <div class="map-popup-row">
-
-                        <span>
-                          Active
-                        </span>
-
-                        <span>
-                          ${formatNumber(
-                            active
-                          )}
-                        </span>
-
-                      </div>
-
-                      <div class="map-popup-row">
-
-                        <span>
-                          Inactive
-                        </span>
-
-                        <span>
-                          ${formatNumber(
-                            inactive
-                          )}
-                        </span>
-
-                      </div>
-
-                      <div class="map-popup-row">
-
-                        <span>
-                          Total
-                        </span>
-
-                        <span>
-                          ${formatNumber(
-                            total
-                          )}
-                        </span>
-
-                      </div>
-
-                    </div>
-                  `
-                );
-
-
-                /* ----------------------------------------------
-                   MOUSEOVER
-                   ---------------------------------------------- */
-
-                layer.on(
-                  'mouseover',
-                  function() {
-
-                    this.setStyle({
-
-                      weight:
-                        3,
-
-                      fillOpacity:
-                        0.85
-
-                    });
-
-
-                    this.bringToFront();
-
-                  }
-                );
-
-
-                /* ----------------------------------------------
-                   MOUSEOUT
-                   ---------------------------------------------- */
-
-                layer.on(
-                  'mouseout',
-                  function() {
-
-                    const selected =
-                      selectedMunicipality &&
-                      normalizeMunicipalityName(
-                        geoName
-                      ) ===
-                      normalizeMunicipalityName(
-                        selectedMunicipality
-                      );
-
-
-                    this.setStyle({
-
-                      weight:
-                        selected
-                          ? 3
-                          : 1.2,
-
-                      fillOpacity:
-                        selected
-                          ? 0.85
-                          : 0.65
-
-                    });
-
-                  }
-                );
-
-
-                /* ----------------------------------------------
-                   CLICK
-                   ---------------------------------------------- */
-
-                layer.on(
-                  'click',
-                  function(
-                    event
-                  ) {
-
-                    L.DomEvent
-                      .stopPropagation(
-                        event
-                      );
-
-
-                    handleMunicipalitySelect(
-                      displayName,
-                      layer
-                    );
-
-                  }
-                );
-
-              }
-
-          }
-        );
-
-
-      municipalityLayer.addTo(
-        map
-      );
-
-
-      municipalityLayer.bringToFront();
-
-    }
-
-
-    /* ========================================================
-       HUC LAYER
-       ======================================================== */
-
-    function renderHucLayer() {
-
-      if (
-        !hucGeoJSON
-      ) {
-
-        return;
-
-      }
-
-
-      if (
-        hucLayer
-      ) {
-
-        map.removeLayer(
-          hucLayer
-        );
-
-        hucLayer =
-          null;
-
-      }
-
-
-      hucLayer =
-        L.geoJSON(
-          hucGeoJSON,
-          {
-
-            pane:
-              'hucPane',
-
-            interactive:
-              false,
-
-            style: {
-
-              color:
-                '#374151',
-
-              weight:
-                2,
-
-              opacity:
-                0.75,
-
-              fillOpacity:
-                0
-
-            }
-
-          }
-        );
-
-
-      hucLayer.addTo(
-        map
-      );
-
-
-      /*
-       * Municipality layer stays
-       * above HUC boundaries.
-       */
-
-      if (
-        municipalityLayer
-      ) {
-
-        municipalityLayer
-          .bringToFront();
-
-      }
-
-    }
-
-
-    /* ========================================================
-       MUNICIPALITY FILTER
-       ======================================================== */
-
-    function populateMunicipalityFilter() {
-
-      const select =
-        document.getElementById(
-          'municipalityFilter'
-        );
-
-
-      select.innerHTML = `
-
-        <option value="">
-          All Municipalities
-        </option>
-
-      `;
-
-
-      municipalityData.forEach(
-        row => {
-
-          const option =
-            document.createElement(
-              'option'
-            );
-
-
-          option.value =
-            row.Municipality;
-
-
-          option.textContent =
-            row.Municipality;
-
-
-          select.appendChild(
-            option
-          );
-
-        }
-      );
-
-
-      if (
-        selectedMunicipality
-      ) {
-
-        const matching =
-          municipalityData.find(
-            row =>
-              normalizeMunicipalityName(
-                row.Municipality
-              ) ===
-              normalizeMunicipalityName(
-                selectedMunicipality
-              )
-          );
-
-
-        if (
-          matching
-        ) {
-
-          select.value =
-            matching.Municipality;
-
-        }
-
-      }
-
-    }
-
-
-    /* ========================================================
-       MUNICIPALITY LIST
-       ======================================================== */
-
-    function renderMunicipalityList() {
-
-      const container =
-        document.getElementById(
-          'municipalityList'
-        );
-
-
-      if (
-        !municipalityData ||
-        municipalityData.length === 0
-      ) {
-
-        container.innerHTML = `
-
-          <div class="empty">
-            No municipality data found.
-          </div>
-
-        `;
-
-        return;
-
-      }
-
-
-      container.innerHTML =
-        municipalityData
-          .map(
-            row => {
-
-              const selected =
-                selectedMunicipality &&
-                normalizeMunicipalityName(
-                  selectedMunicipality
-                ) ===
-                normalizeMunicipalityName(
-                  row.Municipality
-                );
-
-
-              return `
-
-                <div
-                  class="municipality-row ${
-                    selected
-                      ? 'selected'
-                      : ''
-                  }"
-                  data-municipality="${escapeHtml(
-                    row.Municipality
-                  )}"
-                >
-
-                  <div class="municipality-name">
-
-                    ${escapeHtml(
-                      row.Municipality
-                    )}
-
-                  </div>
-
-
-                  <div class="municipality-stats">
-
-                    <div>
-
-                      <span class="stat-label">
-                        Active
-                      </span>
-
-                      <span class="stat-value">
-                        ${formatNumber(
-                          row.Active
-                        )}
-                      </span>
-
-                    </div>
-
-
-                    <div>
-
-                      <span class="stat-label">
-                        Inactive
-                      </span>
-
-                      <span class="stat-value">
-                        ${formatNumber(
-                          row.Inactive
-                        )}
-                      </span>
-
-                    </div>
-
-
-                    <div>
-
-                      <span class="stat-label">
-                        Total
-                      </span>
-
-                      <span class="stat-value">
-                        ${formatNumber(
-                          row.Total
-                        )}
-                      </span>
-
-                    </div>
-
-                  </div>
-
-                </div>
-
-              `;
-
-            }
-          )
-          .join('');
-
-
-      container
-        .querySelectorAll(
-          '.municipality-row'
-        )
-        .forEach(
-          element => {
-
-            element.addEventListener(
-              'click',
-              () => {
-
-                handleMunicipalitySelect(
-                  element.dataset
-                    .municipality
-                );
-
-              }
-            );
-
-          }
-        );
-
-    }
-
-
-    /* ========================================================
-       MUNICIPALITY SELECTION
-       ======================================================== */
-
-    async function handleMunicipalitySelect(
-      name,
-      clickedLayer = null
-    ) {
-
-      const requestedName =
-        String(
-          name || ''
-        ).trim();
-
-
-      /*
-       * Reset.
-       */
-
-      if (
-        !requestedName
-      ) {
-
-        selectedMunicipality =
-          '';
-
-        selectedBarangay =
-          '';
-
-
-        document.getElementById(
-          'municipalityFilter'
-        ).value =
-          '';
-
-
-        renderMunicipalityList();
-
-        renderMunicipalityMap();
-
-        clearBarangayPanel();
-
-        fitPalawan();
-
-        return;
-
-      }
-
-
-      /*
-       * Resolve exact API name.
-       */
-
-      const matching =
-        municipalityData.find(
-          row =>
-            normalizeMunicipalityName(
-              row.Municipality
-            ) ===
-            normalizeMunicipalityName(
-              requestedName
-            )
-        );
-
-
-      selectedMunicipality =
-        matching
-          ? matching.Municipality
-          : requestedName;
-
-
-      selectedBarangay =
-        '';
-
-
-      document.getElementById(
-        'municipalityFilter'
-      ).value =
-        selectedMunicipality;
-
-
-      renderMunicipalityList();
-
-      renderMunicipalityMap();
-
-
-      /*
-       * Zoom to clicked polygon.
-       */
-
-      if (
-        clickedLayer
-      ) {
-
-        try {
-
-          const bounds =
-            clickedLayer.getBounds();
-
-
-          if (
-            bounds &&
-            bounds.isValid()
-          ) {
-
-            map.fitBounds(
-              bounds,
-              {
-                padding:
-                  [30, 30],
-
-                maxZoom:
-                  11
-              }
-            );
-
-          }
-
-        } catch (error) {
-
-          console.warn(
-            'Unable to zoom to municipality:',
-            error
-          );
-
-        }
-
-      } else {
-
-        zoomToMunicipality(
-          selectedMunicipality
-        );
-
-      }
-
-
-      await loadBarangays(
-        selectedMunicipality
-      );
-
-    }
-
-
-    /* ========================================================
-       ZOOM TO MUNICIPALITY
-       ======================================================== */
-
-    function zoomToMunicipality(
-      municipalityName
-    ) {
-
-      if (
-        !municipalityLayer
-      ) {
-
-        return;
-
-      }
-
-
-      const target =
-        normalizeMunicipalityName(
-          municipalityName
-        );
-
-
-      let targetLayer =
-        null;
-
-
-      municipalityLayer.eachLayer(
-        layer => {
-
-          if (
-            targetLayer
-          ) {
-
-            return;
-
-          }
-
-
-          const name =
-            getMunicipalityName(
-              layer.feature
-            );
-
-
-          if (
-            normalizeMunicipalityName(
-              name
-            ) === target
-          ) {
-
-            targetLayer =
-              layer;
-
-          }
-
-        }
-      );
-
-
-      if (
-        !targetLayer
-      ) {
-
-        return;
-
-      }
-
-
-      try {
-
-        const bounds =
-          targetLayer.getBounds();
-
-
-        if (
-          bounds &&
-          bounds.isValid()
-        ) {
-
-          map.fitBounds(
-            bounds,
-            {
-              padding:
-                [30, 30],
-
-              maxZoom:
-                11
-            }
-          );
-
-        }
-
-      } catch (error) {
-
-        console.warn(
-          'Municipality zoom failed:',
-          error
-        );
-
-      }
-
-    }
-
-
-    /* ========================================================
-       BARANGAYS
-       ======================================================== */
-
-    async function loadBarangays(
-      municipality
-    ) {
-
-      const title =
-        document.getElementById(
-          'barangayTitle'
-        );
-
-
-      const list =
-        document.getElementById(
-          'barangayList'
-        );
-
-
-      title.textContent =
-        `Barangay Breakdown: ${municipality}`;
-
-
-      list.innerHTML = `
-
-        <div class="empty">
-          Loading barangays...
-        </div>
-
-      `;
-
-
-      document.getElementById(
-        'breakdownContainer'
-      ).style.display =
-        'none';
-
-
-      try {
-
-        const rows =
-          await loadJsonp(
-            'barangay',
-            {
-              municipality
-            }
-          );
-
-
-        currentMunicipalityRows =
-          Array.isArray(
-            rows
-          )
-            ? rows
-            : [];
-
-
-        renderBarangayList(
-          currentMunicipalityRows
-        );
-
-      } catch (error) {
-
-        console.error(
-          'Barangay loading error:',
-          error
-        );
-
-
-        list.innerHTML = `
-
-          <div class="empty">
-            ${escapeHtml(
-              error.message
-            )}
-          </div>
-
-        `;
-
-      }
-
-    }
-
-
-    /* ========================================================
-       BARANGAY LIST
-       ======================================================== */
-
-    function renderBarangayList(
-      rows
-    ) {
-
-      const container =
-        document.getElementById(
-          'barangayList'
-        );
-
-
-      if (
-        !rows ||
-        rows.length === 0
-      ) {
-
-        container.innerHTML = `
-
-          <div class="empty">
-            No barangay data found.
-          </div>
-
-        `;
-
-        return;
-
-      }
-
-
-      container.innerHTML =
-        rows
-          .map(
-            (
-              row,
-              index
-            ) => {
-
-              const selected =
-                selectedBarangay &&
-                normalizeMunicipalityName(
-                  selectedBarangay
-                ) ===
-                normalizeMunicipalityName(
-                  row.Barangay
-                );
-
-
-              return `
-
-                <div
-                  class="barangay-row ${
-                    selected
-                      ? 'selected'
-                      : ''
-                  }"
-                  data-index="${index}"
-                >
-
-                  <div class="barangay-name">
-
-                    ${escapeHtml(
-                      row.Barangay
-                    )}
-
-                  </div>
-
-
-                  <div class="barangay-values">
-
-                    <span>
-
-                      Active:
-                      <strong>
-                        ${formatNumber(
-                          row.Active
-                        )}
-                      </strong>
-
-                    </span>
-
-
-                    <span>
-
-                      Inactive:
-                      <strong>
-                        ${formatNumber(
-                          row.Inactive
-                        )}
-                      </strong>
-
-                    </span>
-
-
-                    <span>
-
-                      Total:
-                      <strong>
-                        ${formatNumber(
-                          row.Total
-                        )}
-                      </strong>
-
-                    </span>
-
-                  </div>
-
-                </div>
-
-              `;
-
-            }
-          )
-          .join('');
-
-
-      container
-        .querySelectorAll(
-          '.barangay-row'
-        )
-        .forEach(
-          element => {
-
-            element.addEventListener(
-              'click',
-              () => {
-
-                const index =
-                  Number(
-                    element.dataset
-                      .index
-                  );
-
-
-                const row =
-                  rows[index];
-
-
-                selectedBarangay =
-                  row.Barangay;
-
-
-                showBarangayBreakdown(
-                  row
-                );
-
-
-                renderBarangayList(
-                  rows
-                );
-
-              }
-            );
-
-          }
-        );
-
-    }
-
-
-    /* ========================================================
-       BARANGAY BREAKDOWN
-       ======================================================== */
-
-    function showBarangayBreakdown(
-      row
-    ) {
-
-      if (!row) {
-        return;
-      }
-
-
-      document.getElementById(
-        'breakdownContainer'
-      ).style.display =
-        'block';
-
-
-      renderStatusBreakdown(
-        'activeBreakdown',
-        row.ActiveBreakdown
-      );
-
-
-      renderStatusBreakdown(
-        'inactiveBreakdown',
-        row.InactiveBreakdown
-      );
-
-    }
-
-
-    function renderStatusBreakdown(
-      elementId,
-      breakdown
-    ) {
-
-      const container =
-        document.getElementById(
-          elementId
-        );
-
-
-      if (
-        !breakdown ||
-        Object.keys(
-          breakdown
-        ).length === 0
-      ) {
-
-        container.innerHTML = `
-
-          <div class="empty">
-            No data.
-          </div>
-
-        `;
-
-        return;
-
-      }
-
-
-      const entries =
-        Object.entries(
-          breakdown
-        )
-        .sort(
-          (
-            a,
-            b
-          ) =>
-            toNumber(
-              b[1]
-            ) -
-            toNumber(
-              a[1]
-            )
-        );
-
-
-      container.innerHTML =
-        entries
-          .map(
-            (
-              [
-                status,
-                count
-              ]
-            ) => `
-
-              <div class="breakdown-row">
-
-                <span>
-                  ${escapeHtml(
-                    status
-                  )}
-                </span>
-
-                <span>
-                  ${formatNumber(
-                    count
-                  )}
-                </span>
-
-              </div>
-
-            `
-          )
-          .join('');
-
-    }
-
-
-    /* ========================================================
-       CLEAR BARANGAY
-       ======================================================== */
-
-    function clearBarangayPanel() {
-
-      document.getElementById(
-        'barangayTitle'
-      ).textContent =
-        'Barangay Breakdown';
-
-
-      document.getElementById(
-        'barangayList'
-      ).innerHTML = `
-
-        <div class="empty">
-          Select a municipality to view barangays.
-        </div>
-
-      `;
-
-
-      document.getElementById(
-        'breakdownContainer'
-      ).style.display =
-        'none';
-
-
-      currentMunicipalityRows =
-        [];
-
-    }
-
-
-    /* ========================================================
-       PROVINCIAL TOTALS
-       ======================================================== */
-
-    function renderProvincialTotals(
-      totals
-    ) {
-
-      document.getElementById(
-        'totalActive'
-      ).textContent =
-        formatNumber(
-          totals?.Active
-        );
-
-
-      document.getElementById(
-        'totalInactive'
-      ).textContent =
-        formatNumber(
-          totals?.Inactive
-        );
-
-
-      document.getElementById(
-        'totalBeneficiaries'
-      ).textContent =
-        formatNumber(
-          totals?.Total
-        );
-
-    }
-
-
-    /* ========================================================
-       LAST UPDATED
-       ======================================================== */
-
-    function renderLastUpdated(
-      timestamp
-    ) {
-
-      const element =
-        document.getElementById(
-          'dataAsOf'
-        );
-
-
-      if (!timestamp) {
-
-        element.textContent =
-          'Generated: —';
-
-        return;
-
-      }
-
-
-      const date =
-        new Date(
-          timestamp
-        );
-
-
-      if (
-        Number.isNaN(
-          date.getTime()
-        )
-      ) {
-
-        element.textContent =
-          'Generated: —';
-
-        return;
-
-      }
-
-
-      element.textContent =
-        'Generated: ' +
-        date.toLocaleString(
-          'en-PH',
-          {
-            dateStyle:
-              'medium',
-
-            timeStyle:
-              'short'
-          }
-        );
-
-    }
-
-
-    /* ========================================================
-       FIT PALAWAN
-       ======================================================== */
-
-    function fitPalawan() {
-
-      if (!map) {
-        return;
-      }
-
-
-      map.fitBounds(
-        PALAWAN_BOUNDS,
-        {
-          padding:
-            [10, 10]
-        }
-      );
-
-    }
-
-
-    /* ========================================================
-       RESET
-       ======================================================== */
-
-    function resetMap() {
-
-      selectedMunicipality =
-        '';
-
-      selectedBarangay =
-        '';
-
-
-      document.getElementById(
-        'municipalityFilter'
-      ).value =
-        '';
-
-
-      renderMunicipalityList();
-
-      renderMunicipalityMap();
-
-      clearBarangayPanel();
-
-      fitPalawan();
-
-    }
-
-
-    /* ========================================================
-       REFRESH
-       ======================================================== */
-
-    async function refreshDashboard() {
-
-      hideError();
-
-
-      selectedMunicipality =
-        '';
-
-      selectedBarangay =
-        '';
-
-
-      municipalityGeoJSON =
-        null;
-
-      hucGeoJSON =
-        null;
-
-
-      currentMunicipalityRows =
-        [];
-
-
-      await loadDashboard();
-
-    }
-
-
-    /* ========================================================
-       LOAD DASHBOARD
-       ======================================================== */
-
-    async function loadDashboard() {
-
-      showLoading(true);
-
-      hideError();
-
-
-      try {
-
-        initializeMap();
-
-
-        const [
-          municipal,
-          provincial,
-          lastUpdated,
-          muniGeo,
-          hucGeo
-        ] =
-          await Promise.all([
-
-            loadJsonp(
-              'municipal'
-            ),
-
-            loadJsonp(
-              'provincial'
-            ),
-
-            loadJsonp(
-              'lastupdated'
-            ),
-
-            loadGeoJSON(
-              MUNICIPALITY_GEOJSON
-            ),
-
-            loadGeoJSON(
-              HUC_GEOJSON
-            )
-
-          ]);
-
-
-        /* ------------------------------------------------------
-           MUNICIPALITY DATA
-           ------------------------------------------------------ */
-
-        municipalityData =
-          Array.isArray(
-            municipal
-          )
-            ? municipal
-            : [];
-
-
-        municipalityData =
-          municipalityData.map(
-            row => ({
-
-              Municipality:
-                String(
-                  row.Municipality ||
-                  ''
-                ).trim(),
-
-              Active:
-                toNumber(
-                  row.Active
-                ),
-
-              Inactive:
-                toNumber(
-                  row.Inactive
-                ),
-
-              Total:
-                toNumber(
-                  row.Total
-                )
-
-            })
-          );
-
-
-        municipalityGeoJSON =
-          muniGeo;
-
-
-        hucGeoJSON =
-          hucGeo;
-
-
-        /* ------------------------------------------------------
-           RENDER
-           ------------------------------------------------------ */
-
-        renderProvincialTotals(
-          provincial
-        );
-
-
-        renderLastUpdated(
-          lastUpdated
-        );
-
-
-        populateMunicipalityFilter();
-
-
-        renderMunicipalityList();
-
-
-        renderMunicipalityMap();
-
-
-        renderHucLayer();
-
-
-        /*
-         * Municipality polygons
-         * must remain above HUC.
-         */
-
-        if (
-          municipalityLayer
-        ) {
-
-          municipalityLayer
-            .bringToFront();
-
-        }
-
-
-        /*
-         * Palawan-wide initial view.
-         */
-
-        fitPalawan();
-
-
-        console.log(
-          'Dashboard loaded successfully.'
-        );
-
-
-        console.log(
-          'Municipalities:',
-          municipalityData.length
-        );
-
-
-        console.log(
-          'Province totals:',
-          provincial
-        );
-
-
-        /*
-         * Diagnostic:
-         * show API municipality names.
-         */
-
-        console.log(
-          'Municipality API data:',
-          municipalityData
-        );
-
-      } catch (error) {
-
-        console.error(
-          'Dashboard loading error:',
-          error
-        );
-
-
-        showError(
-          error?.message ||
-          'Unknown error while loading dashboard.'
-        );
-
-
-        initializeMap();
-
-      } finally {
-
-        showLoading(false);
-
-      }
-
-    }
-
-
-    /* ========================================================
-       LOADING
-       ======================================================== */
-
-    function showLoading(
-      show
-    ) {
-
-      document.getElementById(
-        'loadingOverlay'
-      ).style.display =
-        show
-          ? 'flex'
-          : 'none';
-
-    }
-
-
-    /* ========================================================
-       ERROR
-       ======================================================== */
-
-    function showError(
-      message
-    ) {
-
-      document.getElementById(
-        'errorMessage'
-      ).textContent =
-        message;
-
-
-      document.getElementById(
-        'errorBox'
-      ).style.display =
-        'block';
-
-    }
-
-
-    function hideError() {
-
-      document.getElementById(
-        'errorBox'
-      ).style.display =
-        'none';
-
-    }
-
-
-    /* ========================================================
-       START
-       ======================================================== */
-
-    document.addEventListener(
-      'DOMContentLoaded',
-      () => {
-
-        loadDashboard();
-
-      }
+    var PALAWAN_BOUNDS = L.latLngBounds(
+      [7.6, 114.7],
+      [12.7, 120.0]
     );
 
-  </script>
+    var map = L.map('map', {
+      zoomControl: true,
+      preferCanvas: true
+    }).setView([9.8349,118.7384],8);
 
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution:'&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    map.fitBounds(PALAWAN_BOUNDS, {padding:[20,20]});
+
+    var sheetData = [];
+    var municipalLayer = null;
+    var hucLayer = null;
+    var barangayLayer = null;
+    var legendControl = null;
+    var lockedArea = null;
+    var cachedBrgyGeoJson = null;
+    var currentBrgyData = [];
+    var currentMuni = '';
+    var currentView = 'province';
+    var currentType = '';
+    var breaks = [0,0,0,0];
+
+    var muniGeoJsonUrl =
+      'https://raw.githubusercontent.com/amosting92/beneficiary-distribution-map/main/assets/municipalities.geojson';
+    var hucGeoJsonUrl =
+      'https://raw.githubusercontent.com/amosting92/beneficiary-distribution-map/main/assets/highly_urbanized_cities.geojson';
+    var brgyGeoJsonUrl =
+      'https://raw.githubusercontent.com/amosting92/beneficiary-distribution-map/main/assets/barangays.geojson';
+
+    function normalizeName(value) {
+      return String(value || '')
+        .toUpperCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g,'')
+        .replace(/[^A-Z0-9]/g,'');
+    }
+
+    function featureName(feature, fallback) {
+      var p = feature && feature.properties ? feature.properties : {};
+
+      var candidates = [
+        p.ADM3_EN, p.NAME_2, p.NAME2, p.MUNICIPALITY,
+        p.MUNICIPAL, p.CITY, p.CITY_NAME, p.MUN_NAME,
+        p.MUNNAME, p.NAME, p.name
+      ];
+
+      for (var i=0; i<candidates.length; i++) {
+        if (String(candidates[i] || '').trim()) return String(candidates[i]).trim();
+      }
+
+      return fallback || '';
+    }
+
+    function municipalityAliasKey(name) {
+      var n = normalizeName(name);
+
+      // Puerto Princesa HUC naming variants
+      if (
+        n === 'PUERTOPRINCESA' ||
+        n === 'PUERTOPRINCESACITY' ||
+        n === 'CITYOFPUERTOPRINCESA'
+      ) {
+        return 'PUERTO_PRINCESA';
+      }
+
+      // Palawan municipality historically known as Marcos and now
+      // commonly written as Rizal (Marcos) / Rizal.
+      if (
+        n === 'RIZAL' ||
+        n === 'RIZALMARCOS' ||
+        n === 'MARCOS' ||
+        n === 'DRJOSEP RIZAL' ||
+        n === 'DRJOSEP RIZALMUNICIPALITY' ||
+        n === 'DRJOSEP.RIZAL'
+      ) {
+        return 'RIZAL_MARCOS';
+      }
+
+      return n;
+    }
+
+    function canonicalMunicipalityName(name) {
+      var key = municipalityAliasKey(name);
+
+      if (key === 'PUERTO_PRINCESA') {
+        return 'CITY OF PUERTO PRINCESA';
+      }
+
+      if (key === 'RIZAL_MARCOS') {
+        return 'RIZAL (MARCOS)';
+      }
+
+      return String(name || '').trim();
+    }
+
+    function displayMunicipalityName(name) {
+      var key = municipalityAliasKey(name);
+
+      if (key === 'PUERTO_PRINCESA') return 'Puerto Princesa';
+      if (key === 'RIZAL_MARCOS') return 'Rizal (Marcos)';
+
+      return String(name || '').trim();
+    }
+
+    function municipalityNamesMatch(a, b) {
+      var ak = municipalityAliasKey(a);
+      var bk = municipalityAliasKey(b);
+      return ak === bk;
+    }
+
+    function findSheetRecord(name) {
+      var target = municipalityAliasKey(name);
+      if (!target) return null;
+
+      for (var i=0; i<sheetData.length; i++) {
+        if (municipalityAliasKey(sheetData[i].Municipality) === target) {
+          return sheetData[i];
+        }
+      }
+
+      return null;
+    }
+
+    function getBackendMunicipalityName(name) {
+      var record = findSheetRecord(name);
+      return record ? String(record.Municipality).trim() :
+        canonicalMunicipalityName(name);
+    }
+
+    function showLoader(msg) {
+      var el = document.getElementById('loader');
+      el.textContent = msg || 'Kinukuha ang data...';
+      el.style.display = 'block';
+    }
+
+    function hideLoader() {
+      document.getElementById('loader').style.display = 'none';
+    }
+
+    function showError(msg) {
+      var el = document.getElementById('errorToast');
+      el.textContent = '⚠ ' + msg;
+      el.style.display = 'block';
+      setTimeout(function(){ el.style.display='none'; }, 7000);
+    }
+
+    function computeBreaks(data, key) {
+      key = key || 'Active';
+
+      var vals = data
+        .map(function(r){ return Number(r[key]) || 0; })
+        .filter(function(v){ return v > 0; })
+        .sort(function(a,b){ return a-b; });
+
+      if (!vals.length) return [0,0,0,0];
+
+      return [
+        vals[Math.floor(vals.length*.25)] || 0,
+        vals[Math.floor(vals.length*.50)] || 0,
+        vals[Math.floor(vals.length*.75)] || 0,
+        vals[vals.length-1] || 0
+      ];
+    }
+
+    function getColor(active, customBreaks) {
+      active = Number(active) || 0;
+      if (active <= 0) return '#d4d4d4';
+
+      var b = customBreaks || breaks;
+
+      return active > b[3] ? '#08306b' :
+             active > b[2] ? '#1565c0' :
+             active > b[1] ? '#4292c6' :
+             active > b[0] ? '#9ecae1' :
+                             '#deebf7';
+    }
+
+    function addLegend() {
+      if (legendControl) map.removeControl(legendControl);
+
+      legendControl = L.control({position:'bottomright'});
+
+      legendControl.onAdd = function() {
+        var div = L.DomUtil.create('div','info legend');
+        var colors = ['#d4d4d4','#deebf7','#9ecae1','#4292c6','#1565c0','#08306b'];
+        var b = breaks;
+
+        var labels = [
+          'Walang data',
+          '1 – ' + (b[0] || 0).toLocaleString(),
+          ((b[0] || 0)+1).toLocaleString() + ' – ' + (b[1] || 0).toLocaleString(),
+          ((b[1] || 0)+1).toLocaleString() + ' – ' + (b[2] || 0).toLocaleString(),
+          ((b[2] || 0)+1).toLocaleString() + ' – ' + (b[3] || 0).toLocaleString(),
+          '> ' + (b[3] || 0).toLocaleString()
+        ];
+
+        div.innerHTML = '<strong>Active HHs</strong>' +
+          colors.map(function(c,i){
+            return '<br><i style="background:'+c+'"></i>'+labels[i];
+          }).join('');
+
+        return div;
+      };
+
+      legendControl.addTo(map);
+    }
+
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxIijDqYshUkBNLnJ9cprKuQ_kuwd67VH8I5knVzc0dzak866YhPIqEitHin3vJcn7o/exec';
+
+    function apiJsonp(action, params) {
+      return new Promise(function(resolve, reject) {
+        var callbackName = '__palawanApi_' + Date.now() + '_' +
+          Math.random().toString(36).slice(2);
+
+        var script = document.createElement('script');
+        var query = new URLSearchParams(params || {});
+        query.set('action', action);
+        query.set('callback', callbackName);
+
+        var timeout = setTimeout(function() {
+          cleanup();
+          reject(new Error('API timeout.'));
+        }, 15000);
+
+        function cleanup() {
+          clearTimeout(timeout);
+          if (script.parentNode) script.parentNode.removeChild(script);
+          try { delete window[callbackName]; } catch(e) { window[callbackName] = undefined; }
+        }
+
+        window[callbackName] = function(data) {
+          cleanup();
+          if (data && data.error) reject(new Error(data.error));
+          else resolve(data);
+        };
+
+        script.onerror = function() {
+          cleanup();
+          reject(new Error('Could not reach Apps Script API.'));
+        };
+
+        script.src = API_URL + '?' + query.toString();
+        document.head.appendChild(script);
+      });
+    }
+
+    function loadMapShapes() {
+      showLoader('Kinukuha ang map boundaries...');
+
+      Promise.all([
+        fetch(muniGeoJsonUrl, {cache:'no-store'}).then(function(r){
+          if (!r.ok) throw new Error('Municipality GeoJSON HTTP '+r.status);
+          return r.json();
+        }),
+        fetch(hucGeoJsonUrl, {cache:'no-store'}).then(function(r){
+          if (!r.ok) throw new Error('HUC GeoJSON HTTP '+r.status);
+          return r.json();
+        })
+      ])
+      .then(function(results){
+        var muniData = results[0];
+        var hucData = results[1];
+
+        if (!muniData.features || !Array.isArray(muniData.features)) {
+          throw new Error('Municipality GeoJSON has no valid features.');
+        }
+        if (!hucData.features || !Array.isArray(hucData.features)) {
+          throw new Error('HUC GeoJSON has no valid features.');
+        }
+
+        console.log('Municipality features:', muniData.features.length);
+        console.log('HUC features:', hucData.features.length);
+
+        drawMunicipalityLayer(muniData);
+        drawHucLayer(hucData);
+
+        var allLayers = [];
+        if (municipalLayer) allLayers.push(municipalLayer);
+        if (hucLayer) allLayers.push(hucLayer);
+
+        // Keep the province dashboard focused on Palawan.
+        // Do not fit to the raw GeoJSON extent because the source boundary
+        // datasets may contain features outside Palawan.
+        map.fitBounds(PALAWAN_BOUNDS, {padding:[20,20]});
+
+        hideLoader();
+      })
+      .catch(function(err){
+        hideLoader();
+        showError('Hindi ma-load ang mapa: ' + err.message);
+        console.error(err);
+      });
+    }
+
+    function polygonStyle(feature) {
+      var name = featureName(feature);
+      var record = findSheetRecord(name);
+
+      return {
+        fillColor: getColor(record ? record.Active : 0),
+        weight: 1.5,
+        opacity: 1,
+        color: '#ffffff',
+        fillOpacity: 0.8
+      };
+    }
+
+    function highlight(layer) {
+      layer.setStyle({
+        weight: 3,
+        color: '#222',
+        fillOpacity: 0.95
+      });
+
+      if (layer.bringToFront) layer.bringToFront();
+    }
+
+    function resetPolygon(layer) {
+      if (municipalLayer) municipalLayer.resetStyle(layer);
+      if (hucLayer) hucLayer.resetStyle(layer);
+    }
+
+    function onMuniFeature(feature, layer, isHuc) {
+      var rawName = featureName(feature, isHuc ? 'PUERTO PRINCESA' : '');
+      var name = displayMunicipalityName(rawName);
+      var backendName = getBackendMunicipalityName(rawName);
+      var nameUpper = normalizeName(name);
+
+      if (!nameUpper) {
+        console.warn('Map feature has no municipality name:', feature.properties);
+        return;
+      }
+
+      layer.bindTooltip(name, {
+        sticky:true,
+        direction:'top',
+        opacity:.95
+      });
+
+      layer.on('mouseover', function(){
+        highlight(layer);
+
+        if (!lockedArea) {
+          var record = findSheetRecord(name);
+
+          infoPanel.update({
+            Name: name,
+            Level: isHuc ? 'Highly Urbanized City' : 'Municipality',
+            Active: record ? record.Active : 0,
+            Inactive: record ? record.Inactive : 0,
+            Total: record ? record.Total : 0
+          });
+        }
+      });
+
+      layer.on('mouseout', function(){
+        resetPolygon(layer);
+        if (!lockedArea) infoPanel.update();
+      });
+
+      layer.on('click', function(){
+        lockedArea = name;
+        currentMuni = name;
+        map.fitBounds(layer.getBounds(), {padding:[25,25]});
+        drillDownToBarangays(backendName, name);
+      });
+    }
+
+    function isPalawanMunicipalityFeature(feature) {
+      var p = feature && feature.properties ? feature.properties : {};
+
+      var provinceName = normalizeName(
+        p.ADM2_EN || p.PROVINCE || p.PROVINCE_NAME ||
+        p.ADM2_NAME || p.province || ''
+      );
+
+      var provinceCode = String(
+        p.ADM2_PCODE || p.PROVINCE_PCODE ||
+        p.ADM2_CODE || p.province_code || ''
+      ).toUpperCase().trim();
+
+      // Palawan province PSGC code.
+      return provinceCode === 'PH17053' || provinceName === 'PALAWAN';
+    }
+
+    function filterPalawanFeatures(data) {
+      if (!data || !Array.isArray(data.features)) {
+        return {type:'FeatureCollection', features:[]};
+      }
+
+      var filtered = data.features.filter(isPalawanMunicipalityFeature);
+
+      console.log(
+        'Municipality boundary filter:',
+        data.features.length,
+        'total features ->',
+        filtered.length,
+        'Palawan features'
+      );
+
+      return {
+        type: 'FeatureCollection',
+        features: filtered
+      };
+    }
+
+    function drawMunicipalityLayer(data) {
+      if (municipalLayer) map.removeLayer(municipalLayer);
+
+      data = filterPalawanFeatures(data);
+
+      municipalLayer = L.geoJSON(data, {
+        style: polygonStyle,
+        onEachFeature: function(feature, layer){
+          onMuniFeature(feature, layer, false);
+        }
+      }).addTo(map);
+
+      municipalLayer.bringToBack();
+    }
+
+    function isPalawanHucFeature(feature) {
+      var p = feature && feature.properties ? feature.properties : {};
+      var provinceName = normalizeName(
+        p.ADM2_EN || p.PROVINCE || p.PROVINCE_NAME ||
+        p.ADM2_NAME || p.province || ''
+      );
+      var provinceCode = String(
+        p.ADM2_PCODE || p.PROVINCE_PCODE ||
+        p.ADM2_CODE || p.province_code || ''
+      ).toUpperCase().trim();
+
+      var municipality = p.ADM3_EN || p.NAME_2 ||
+        p.MUNICIPALITY || p.MUN_NAME || p.NAME || '';
+
+      return provinceCode === 'PH17053' ||
+             provinceName === 'PALAWAN' ||
+             municipalityAliasKey(municipality) === 'PUERTO_PRINCESA';
+    }
+
+    function filterPalawanHucFeatures(data) {
+      if (!data || !Array.isArray(data.features)) {
+        return {type:'FeatureCollection', features:[]};
+      }
+
+      return {
+        type:'FeatureCollection',
+        features:data.features.filter(isPalawanHucFeature)
+      };
+    }
+
+    function drawHucLayer(data) {
+      if (hucLayer) map.removeLayer(hucLayer);
+
+      data = filterPalawanHucFeatures(data);
+
+      /*
+       * Puerto Princesa is supplied by a separate HUC GeoJSON.
+       * It is intentionally kept as a separate interactive layer.
+       */
+      hucLayer = L.geoJSON(data, {
+        style: polygonStyle,
+        onEachFeature: function(feature, layer){
+          onMuniFeature(feature, layer, true);
+        }
+      }).addTo(map);
+
+      hucLayer.bringToFront();
+    }
+
+    var infoPanel = L.control({position:'topright'});
+
+    infoPanel.onAdd = function() {
+      this._div = L.DomUtil.create('div','info');
+      this.update();
+      return this._div;
+    };
+
+    infoPanel.update = function(props) {
+      if (!props) {
+        this._div.innerHTML =
+          '<h4>Impormasyon</h4>' +
+          '<span style="color:#888;">I-hover ang mouse sa lugar</span>';
+        return;
+      }
+
+      this._div.innerHTML =
+        '<h4>' + props.Level + ' Profile</h4>' +
+        '<b>' + props.Name + '</b><br><br>' +
+        '<span style="color:green;">✔ Active: ' +
+        (Number(props.Active)||0).toLocaleString() + '</span><br>' +
+        '<span style="color:#c0392b;">✘ Inactive: ' +
+        (Number(props.Inactive)||0).toLocaleString() + '</span><br>' +
+        '<b>Total: ' + (Number(props.Total)||0).toLocaleString() + '</b>';
+    };
+
+    infoPanel.addTo(map);
+
+    function drillDownToBarangays(m, displayName) {
+      showLoader('Kinukuha ang barangay data...');
+
+      var backendName = getBackendMunicipalityName(m);
+      var uiName = displayName || displayMunicipalityName(m);
+
+      apiJsonp('barangay', { municipality: backendName })
+        .then(function(d){
+          hideLoader();
+
+          lockedArea = uiName;
+          currentMuni = uiName;
+          currentBrgyData = Array.isArray(d) ? d : [];
+          currentView = 'barangay';
+
+          drawBrgy(backendName, currentBrgyData, uiName);
+
+          document.getElementById('tablePanel').style.display = 'flex';
+          renderSummaryTable();
+
+          document.getElementById('btnBackToSummary').style.display = 'inline';
+          document.getElementById('btnBackToSummary').onclick = function(){
+            if (currentType) renderMunicipalityBreakdown(currentType);
+            else renderProvinceSummary();
+          };
+        })
+        .catch(function(err){
+          hideLoader();
+          showError('Hindi ma-load ang barangay data: ' +
+            (err && err.message ? err.message : err));
+        });
+    }
+
+    function drawBrgy(m, d, displayName) {
+      if (barangayLayer) {
+        map.removeLayer(barangayLayer);
+        barangayLayer = null;
+      }
+
+      if (cachedBrgyGeoJson) {
+        renderB(m,d,cachedBrgyGeoJson,displayName);
+        return;
+      }
+
+      fetch(brgyGeoJsonUrl, {cache:'no-store'})
+        .then(function(r){
+          if (!r.ok) throw new Error('Barangay GeoJSON HTTP '+r.status);
+          return r.json();
+        })
+        .then(function(j){
+          cachedBrgyGeoJson = j;
+          renderB(m,d,j,displayName);
+        })
+        .catch(function(err){
+          showError('Hindi ma-load ang barangay boundaries: '+err.message);
+        });
+    }
+
+    function isPalawanBarangayFeature(feature) {
+      var p = feature && feature.properties ? feature.properties : {};
+
+      var provinceName = normalizeName(
+        p.ADM2_EN || p.PROVINCE || p.PROVINCE_NAME || ''
+      );
+
+      var provinceCode = String(
+        p.ADM2_PCODE || p.PROVINCE_PCODE || ''
+      ).toUpperCase().trim();
+
+      // Palawan PSGC province code is PH17053.
+      if (provinceCode === 'PH17053') return true;
+      if (provinceName === 'PALAWAN') return true;
+
+      // Puerto Princesa is a HUC, so some boundary datasets may not
+      // classify its province field consistently. Its municipality name
+      // is sufficient to keep it inside this dashboard.
+      var muniName = p.ADM3_EN || p.NAME_2 || p.MUNICIPALITY || p.MUN_NAME || '';
+      return municipalityAliasKey(muniName) === 'PUERTO_PRINCESA';
+    }
+
+    function renderB(m,d,j,displayName) {
+      var mCanonical = getBackendMunicipalityName(m);
+      var mUpper = normalizeName(mCanonical);
+      var bBreaks = computeBreaks(d);
+
+      var filtered = (j.features || []).filter(function(f){
+        var prop =
+          (f.properties && (
+            f.properties.ADM3_EN ||
+            f.properties.NAME_2 ||
+            f.properties.MUNICIPALITY ||
+            f.properties.MUN_NAME
+          )) || '';
+
+        // TWO conditions are mandatory:
+        // 1) barangay belongs to the selected municipality
+        // 2) barangay belongs to Palawan
+        return isPalawanBarangayFeature(f) &&
+               municipalityNamesMatch(prop, mCanonical);
+      });
+
+      console.log(
+        'Barangay features for',
+        displayName || m,
+        'within Palawan:',
+        filtered.length
+      );
+
+      console.log(
+        'Barangay features for',
+        displayName || m,
+        ':',
+        filtered.length
+      );
+
+      barangayLayer = L.geoJSON(
+        {type:'FeatureCollection',features:filtered},
+        {
+          style:function(f){
+            var bName = String(
+              (f.properties && (f.properties.ADM4_EN || f.properties.NAME_3 ||
+                f.properties.BARANGAY || f.properties.NAME)) || ''
+            ).trim();
+
+            var b = d.find(function(x){
+              return normalizeName(x.Barangay) === normalizeName(bName);
+            }) || {Active:0};
+
+            return {
+              fillColor:getColor(b.Active,bBreaks),
+              weight:1,
+              color:'#444',
+              fillOpacity:.8
+            };
+          },
+
+          onEachFeature:function(f,l){
+            var bName = String(
+              (f.properties && (f.properties.ADM4_EN || f.properties.NAME_3 ||
+                f.properties.BARANGAY || f.properties.NAME)) || 'Unknown Barangay'
+            );
+
+            l.on('mouseover',function(){
+              l.setStyle({weight:2.5,color:'#111',fillOpacity:.95});
+
+              var b = d.find(function(x){
+                return normalizeName(x.Barangay) === normalizeName(bName);
+              }) || {Active:0,Inactive:0,Total:0};
+
+              infoPanel.update({
+                Name:bName,
+                Level:'Barangay',
+                Active:b.Active,
+                Inactive:b.Inactive,
+                Total:b.Total
+              });
+            });
+
+            l.on('mouseout',function(){
+              if (barangayLayer) barangayLayer.resetStyle(l);
+              if (!lockedArea) infoPanel.update();
+            });
+          }
+        }
+      ).addTo(map);
+
+      if (barangayLayer.getLayers().length) {
+        map.fitBounds(barangayLayer.getBounds(), {padding:[25,25]});
+      }
+
+      document.getElementById('backBtn').style.display = 'block';
+    }
+
+    function renderSummaryTable() {
+      document.getElementById('panelTitle').textContent =
+        currentMuni + ' — Barangay Summary';
+
+      document.getElementById('tableHead').innerHTML =
+        '<tr><th>Barangay</th>' +
+        '<th class="clickable-th" onclick="renderDrilldown(\'Active\')">Active ↕</th>' +
+        '<th class="clickable-th" onclick="renderDrilldown(\'Inactive\')">Inactive ↕</th>' +
+        '<th>Total</th></tr>';
+
+      document.getElementById('tableBody').innerHTML =
+        currentBrgyData.map(function(b){
+          return '<tr>' +
+            '<td>'+b.Barangay+'</td>' +
+            '<td>'+(Number(b.Active)||0).toLocaleString()+'</td>' +
+            '<td>'+(Number(b.Inactive)||0).toLocaleString()+'</td>' +
+            '<td>'+(Number(b.Total)||0).toLocaleString()+'</td>' +
+            '</tr>';
+        }).join('');
+    }
+
+    function renderProvinceSummary() {
+      currentView = 'province';
+      currentType = '';
+      document.getElementById('tablePanel').style.display = 'flex';
+      document.getElementById('panelTitle').textContent =
+        'Palawan Province-Wide Summary';
+
+      var active = 0;
+      var inactive = 0;
+
+      sheetData.forEach(function(r){
+        active += Number(r.Active)||0;
+        inactive += Number(r.Inactive)||0;
+      });
+
+      var total = active + inactive;
+
+      document.getElementById('btnBackToSummary').style.display = 'none';
+
+      document.getElementById('tableHead').innerHTML =
+        '<tr><th>Category</th><th>Count</th></tr>';
+
+      document.getElementById('tableBody').innerHTML =
+        '<tr style="cursor:pointer;" onclick="renderMunicipalityBreakdown(\'Active\')">' +
+        '<td><strong>Active</strong></td><td>'+active.toLocaleString()+'</td></tr>' +
+        '<tr style="cursor:pointer;" onclick="renderMunicipalityBreakdown(\'Inactive\')">' +
+        '<td><strong>Inactive</strong></td><td>'+inactive.toLocaleString()+'</td></tr>' +
+        '<tr><td><strong>Total</strong></td><td><strong>'+total.toLocaleString()+'</strong></td></tr>';
+    }
+
+    function renderMunicipalityBreakdown(type) {
+      currentView = 'municipality';
+      currentType = type;
+
+      document.getElementById('panelTitle').textContent =
+        'Municipality Breakdown - ' + type;
+
+      document.getElementById('btnBackToSummary').style.display = 'inline';
+      document.getElementById('btnBackToSummary').onclick = renderProvinceSummary;
+
+      var rows = sheetData.slice().sort(function(a,b){
+        return (Number(b[type])||0) - (Number(a[type])||0);
+      });
+
+      document.getElementById('tableHead').innerHTML =
+        '<tr><th>Municipality / City</th><th>'+type+'</th></tr>';
+
+      var body = document.getElementById('tableBody');
+      body.innerHTML = '';
+
+      rows.forEach(function(r){
+        var tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
+
+        var td1 = document.createElement('td');
+        td1.textContent = r.Municipality;
+
+        var td2 = document.createElement('td');
+        td2.textContent = (Number(r[type])||0).toLocaleString();
+
+        tr.appendChild(td1);
+        tr.appendChild(td2);
+
+        tr.addEventListener('click',function(){
+          provinceToBarangay(r.Municipality);
+        });
+
+        body.appendChild(tr);
+      });
+    }
+
+    function provinceToBarangay(muni) {
+      drillDownToBarangays(
+        getBackendMunicipalityName(muni),
+        displayMunicipalityName(muni)
+      );
+    }
+
+    function renderDrilldown(type) {
+      var keys = new Set();
+
+      currentBrgyData.forEach(function(b){
+        var breakdown =
+          type === 'Active'
+          ? (b.ActiveBreakdown || {})
+          : (b.InactiveBreakdown || {});
+
+        Object.keys(breakdown).forEach(function(k){ keys.add(k); });
+      });
+
+      var kArr = Array.from(keys).sort();
+
+      document.getElementById('tableHead').innerHTML =
+        '<tr><th>Barangay</th>' +
+        kArr.map(function(k){ return '<th>'+k+'</th>'; }).join('') +
+        '<th>Total</th></tr>';
+
+      document.getElementById('tableBody').innerHTML =
+        currentBrgyData.map(function(b){
+          var breakdown =
+            type === 'Active'
+            ? (b.ActiveBreakdown || {})
+            : (b.InactiveBreakdown || {});
+
+          return '<tr><td>'+b.Barangay+'</td>' +
+            kArr.map(function(k){
+              return '<td>'+(Number(breakdown[k])||0).toLocaleString()+'</td>';
+            }).join('') +
+            '<td>'+
+            (Number(type === 'Active' ? b.Active : b.Inactive)||0).toLocaleString()+
+            '</td></tr>';
+        }).join('');
+
+      document.getElementById('btnBackToSummary').style.display = 'inline';
+    }
+
+    function refreshData() {
+      showLoader('Nagre-refresh ng data...');
+
+      apiJsonp('clearcache')
+        .then(function(){
+          return apiJsonp('municipal');
+        })
+        .then(function(d){
+          sheetData = Array.isArray(d) ? d : [];
+          breaks = computeBreaks(sheetData);
+
+          document.getElementById('lastRefreshTime').textContent =
+            'Latest refresh: ' + new Date().toLocaleTimeString();
+
+          if (municipalLayer) municipalLayer.setStyle(polygonStyle);
+          if (hucLayer) hucLayer.setStyle(polygonStyle);
+          addLegend();
+
+          hideLoader();
+
+          if (currentView === 'province') renderProvinceSummary();
+          else if (currentView === 'municipality') renderMunicipalityBreakdown(currentType);
+          else if (currentView === 'barangay') renderSummaryTable();
+        })
+        .catch(function(err){
+          hideLoader();
+          showError('Refresh failed: ' +
+            (err && err.message ? err.message : err));
+        });
+    }
+
+    function resetMap() {
+      lockedArea = null;
+      currentMuni = '';
+      currentBrgyData = [];
+      currentView = 'province';
+      currentType = '';
+
+      if (barangayLayer) {
+        map.removeLayer(barangayLayer);
+        barangayLayer = null;
+      }
+
+      map.fitBounds(PALAWAN_BOUNDS, {padding:[20,20]});
+      document.getElementById('backBtn').style.display = 'none';
+
+      if (municipalLayer) municipalLayer.bringToBack();
+      if (hucLayer) hucLayer.bringToFront();
+
+      renderProvinceSummary();
+      infoPanel.update();
+    }
+
+    function onDataReceived(data) {
+      sheetData = Array.isArray(data) ? data : [];
+      breaks = computeBreaks(sheetData);
+
+      document.getElementById('lastRefreshTime').textContent =
+        'Latest refresh: ' + new Date().toLocaleTimeString();
+
+      hideLoader();
+
+      addLegend();
+      loadMapShapes();
+      renderProvinceSummary();
+
+      console.log('Municipality records:', sheetData.length);
+      console.log('Data:', sheetData);
+    }
+
+    document.addEventListener('DOMContentLoaded',function(){
+      showLoader('Kinukuha ang data...');
+
+      apiJsonp('municipal')
+        .then(onDataReceived)
+        .catch(function(err){
+          hideLoader();
+          showError('Hindi ma-load ang data: ' +
+            (err && err.message ? err.message : err));
+        });
+
+      // Data is released on a periodic schedule.
+      // Keep the dashboard's data vintage fixed until the next official update.
+      document.getElementById('dataAsOf').textContent = 'Data as of: September 2, 2026';
+      document.getElementById('dataAsOfTable').textContent = 'Data as of: September 2, 2026';
+    });
+  </script>
 </body>
 </html>
