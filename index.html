@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Palawan Beneficiary Dashboard</title>
 
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
+  >
 
   <style>
     * {
@@ -45,14 +45,6 @@
 
     button {
       cursor: pointer;
-    }
-
-    /* ==========================================================
-       APP
-       ========================================================== */
-
-    .app {
-      min-height: 100vh;
     }
 
     /* ==========================================================
@@ -219,7 +211,7 @@
     }
 
     /* ==========================================================
-       DASHBOARD GRID
+       DASHBOARD
        ========================================================== */
 
     .dashboard-grid {
@@ -309,7 +301,6 @@
     #map {
       width: 100%;
       height: 650px;
-
       background: #dbeafe;
     }
 
@@ -579,11 +570,11 @@
        ========================================================== */
 
     .map-popup {
-      min-width: 160px;
+      min-width: 175px;
     }
 
     .map-popup-title {
-      margin-bottom: 7px;
+      margin-bottom: 8px;
 
       color: #111827;
 
@@ -595,11 +586,11 @@
       display: flex;
       justify-content: space-between;
 
-      gap: 16px;
+      gap: 18px;
 
       font-size: 11px;
 
-      margin: 3px 0;
+      margin: 4px 0;
     }
 
     .map-popup-row span:first-child {
@@ -752,7 +743,9 @@
 
   <div class="app">
 
-    <!-- HEADER -->
+    <!-- ======================================================
+         HEADER
+         ====================================================== -->
 
     <header>
 
@@ -794,7 +787,9 @@
     </header>
 
 
-    <!-- MAIN -->
+    <!-- ======================================================
+         MAIN
+         ====================================================== -->
 
     <main>
 
@@ -808,7 +803,7 @@
 
         <span id="errorMessage"></span>
 
-        <br />
+        <br>
 
         <button
           type="button"
@@ -820,7 +815,9 @@
       </div>
 
 
-      <!-- SUMMARY -->
+      <!-- ====================================================
+           SUMMARY
+           ==================================================== -->
 
       <div class="summary-grid">
 
@@ -886,12 +883,16 @@
       </div>
 
 
-      <!-- DASHBOARD GRID -->
+      <!-- ====================================================
+           DASHBOARD GRID
+           ==================================================== -->
 
       <div class="dashboard-grid">
 
 
-        <!-- MAP -->
+        <!-- ==================================================
+             MAP
+             ================================================== -->
 
         <div class="card map-container">
 
@@ -923,12 +924,16 @@
         </div>
 
 
-        <!-- SIDE -->
+        <!-- ==================================================
+             SIDE COLUMN
+             ================================================== -->
 
         <div class="side-column">
 
 
-          <!-- MUNICIPALITY -->
+          <!-- =================================================
+               MUNICIPALITY BREAKDOWN
+               ================================================= -->
 
           <div class="card">
 
@@ -962,7 +967,9 @@
           </div>
 
 
-          <!-- BARANGAY -->
+          <!-- =================================================
+               BARANGAY BREAKDOWN
+               ================================================= -->
 
           <div class="card">
 
@@ -988,8 +995,6 @@
 
               </div>
 
-
-              <!-- STATUS BREAKDOWN -->
 
               <div id="breakdownContainer">
 
@@ -1060,19 +1065,6 @@
        PALAWAN MAP EXTENT
        ======================================================== */
 
-    /*
-     * These bounds deliberately keep the dashboard focused
-     * on Palawan and nearby waters.
-     *
-     * Southwest:
-     *   Latitude 7.5
-     *   Longitude 114.5
-     *
-     * Northeast:
-     *   Latitude 13.5
-     *   Longitude 121.5
-     */
-
     const PALAWAN_BOUNDS =
       L.latLngBounds(
         [7.5, 114.5],
@@ -1089,7 +1081,7 @@
 
 
     /* ========================================================
-       GLOBAL STATE
+       STATE
        ======================================================== */
 
     let map = null;
@@ -1114,16 +1106,64 @@
 
 
     /* ========================================================
-       NORMALIZE NAME
+       NORMALIZE MUNICIPALITY NAME
        ======================================================== */
 
-    function normalizeName(value) {
+    function normalizeMunicipalityName(
+      value
+    ) {
 
-      return String(value || '')
-        .trim()
-        .toUpperCase()
-        .replace(/\s+/g, ' ')
-        .replace(/[.,]/g, '');
+      let name =
+        String(value || '')
+          .trim()
+          .toUpperCase();
+
+
+      /*
+       * Normalize common punctuation.
+       */
+
+      name =
+        name
+          .replace(/[.,'’`]/g, '')
+          .replace(/-/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+
+      /*
+       * Remove common geographic labels
+       * that may exist in GeoJSON but not
+       * in the MapData sheet.
+       */
+
+      name =
+        name
+          .replace(/^MUNICIPALITY OF /, '')
+          .replace(/^MUNICIPALITY /, '')
+          .replace(/^MUN OF /, '')
+          .replace(/^MUN /, '')
+          .replace(/^CITY OF /, '')
+          .replace(/^CITY /, '')
+          .replace(/ MUNICIPALITY$/, '')
+          .replace(/ CITY$/, '')
+          .trim();
+
+
+      /*
+       * Special handling for Puerto Princesa.
+       */
+
+      if (
+        name.includes('PUERTO PRINCESA')
+      ) {
+
+        return 'PUERTO PRINCESA';
+
+      }
+
+
+      return name;
 
     }
 
@@ -1132,14 +1172,18 @@
        NUMBER
        ======================================================== */
 
-    function toNumber(value) {
+    function toNumber(
+      value
+    ) {
 
       if (
         value === null ||
         value === undefined ||
         value === ''
       ) {
+
         return 0;
+
       }
 
 
@@ -1160,10 +1204,14 @@
     }
 
 
-    function formatNumber(value) {
+    function formatNumber(
+      value
+    ) {
 
       return toNumber(value)
-        .toLocaleString('en-US');
+        .toLocaleString(
+          'en-US'
+        );
 
     }
 
@@ -1172,14 +1220,33 @@
        ESCAPE HTML
        ======================================================== */
 
-    function escapeHtml(value) {
+    function escapeHtml(
+      value
+    ) {
 
-      return String(value ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+      return String(
+        value ?? ''
+      )
+        .replace(
+          /&/g,
+          '&amp;'
+        )
+        .replace(
+          /</g,
+          '&lt;'
+        )
+        .replace(
+          />/g,
+          '&gt;'
+        )
+        .replace(
+          /"/g,
+          '&quot;'
+        )
+        .replace(
+          /'/g,
+          '&#039;'
+        );
 
     }
 
@@ -1194,7 +1261,10 @@
     ) {
 
       return new Promise(
-        (resolve, reject) => {
+        (
+          resolve,
+          reject
+        ) => {
 
           const callbackName =
             'jsonp_' +
@@ -1215,25 +1285,33 @@
             new URLSearchParams({
               api: '1',
               action,
-              callback: callbackName,
+              callback:
+                callbackName,
               ...params
             });
 
 
-          let finished = false;
+          let finished =
+            false;
 
 
           const timeout =
             setTimeout(
               () => {
 
-                if (finished) {
+                if (
+                  finished
+                ) {
                   return;
                 }
 
-                finished = true;
+
+                finished =
+                  true;
+
 
                 cleanup();
+
 
                 reject(
                   new Error(
@@ -1282,15 +1360,21 @@
           }
 
 
-          window[callbackName] =
+          window[
+            callbackName
+          ] =
             response => {
 
-              if (finished) {
+              if (
+                finished
+              ) {
                 return;
               }
 
 
-              finished = true;
+              finished =
+                true;
+
 
               cleanup();
 
@@ -1322,12 +1406,16 @@
           script.onerror =
             () => {
 
-              if (finished) {
+              if (
+                finished
+              ) {
                 return;
               }
 
 
-              finished = true;
+              finished =
+                true;
+
 
               cleanup();
 
@@ -1369,7 +1457,9 @@
         await fetch(url);
 
 
-      if (!response.ok) {
+      if (
+        !response.ok
+      ) {
 
         throw new Error(
           `GeoJSON request failed: ${response.status}`
@@ -1384,42 +1474,53 @@
 
 
     /* ========================================================
-       MUNICIPALITY NAME
+       GEOJSON MUNICIPALITY NAME
        ======================================================== */
 
     function getMunicipalityName(
       feature
     ) {
 
-      const p =
+      const properties =
         feature?.properties || {};
 
 
-      const possibleNames = [
+      /*
+       * Check the most likely
+       * property names first.
+       */
 
-        p.Municipality,
-        p.MUNICIPALITY,
-        p.municipality,
+      const candidates = [
 
-        p.City,
-        p.CITY,
-        p.city,
+        properties.Municipality,
+        properties.MUNICIPALITY,
+        properties.municipality,
 
-        p.MUNICIPALI,
-        p.MUN_NAME,
-        p.MUNNAME,
+        properties.MunName,
+        properties.MUN_NAME,
+        properties.MUNNAME,
 
-        p.NAME_2,
-        p.NAME2,
+        properties.MUNICIPALI,
 
-        p.NAME,
-        p.name
+        properties.City,
+        properties.CITY,
+        properties.city,
+
+        properties.CityName,
+        properties.CITY_NAME,
+
+        properties.NAME_2,
+        properties.NAME2,
+
+        properties.NAME,
+        properties.name
 
       ];
 
 
       for (
-        const value of possibleNames
+        const value
+        of candidates
       ) {
 
         if (
@@ -1428,7 +1529,9 @@
           String(value).trim() !== ''
         ) {
 
-          return String(value).trim();
+          return String(
+            value
+          ).trim();
 
         }
 
@@ -1441,13 +1544,167 @@
 
 
     /* ========================================================
+       BUILD MUNICIPALITY DATA LOOKUP
+       ======================================================== */
+
+    function buildMunicipalityLookup() {
+
+      const lookup = {};
+
+
+      municipalityData.forEach(
+        row => {
+
+          const key =
+            normalizeMunicipalityName(
+              row.Municipality
+            );
+
+
+          if (!key) {
+            return;
+          }
+
+
+          lookup[key] = {
+
+            Municipality:
+              row.Municipality,
+
+            Active:
+              toNumber(
+                row.Active
+              ),
+
+            Inactive:
+              toNumber(
+                row.Inactive
+              ),
+
+            Total:
+              toNumber(
+                row.Total
+              )
+
+          };
+
+        }
+      );
+
+
+      return lookup;
+
+    }
+
+
+    /* ========================================================
+       FIND MUNICIPALITY DATA
+       ======================================================== */
+
+    function findMunicipalityData(
+      geoJsonName,
+      lookup
+    ) {
+
+      const normalized =
+        normalizeMunicipalityName(
+          geoJsonName
+        );
+
+
+      /*
+       * Direct normalized match.
+       */
+
+      if (
+        lookup[normalized]
+      ) {
+
+        return lookup[
+          normalized
+        ];
+
+      }
+
+
+      /*
+       * Fallback:
+       * compare without spaces.
+       */
+
+      const compact =
+        normalized.replace(
+          /\s+/g,
+          ''
+        );
+
+
+      for (
+        const key
+        of Object.keys(
+          lookup
+        )
+      ) {
+
+        if (
+          key.replace(
+            /\s+/g,
+            ''
+          ) === compact
+        ) {
+
+          return lookup[key];
+
+        }
+
+      }
+
+
+      /*
+       * Final fallback:
+       * contains comparison.
+       */
+
+      for (
+        const key
+        of Object.keys(
+          lookup
+        )
+      ) {
+
+        if (
+          key.includes(
+            normalized
+          ) ||
+          normalized.includes(
+            key
+          )
+        ) {
+
+          return lookup[key];
+
+        }
+
+      }
+
+
+      return null;
+
+    }
+
+
+    /* ========================================================
        INITIALIZE MAP
        ======================================================== */
 
     function initializeMap() {
 
-      if (mapInitialized) {
+      if (
+        mapInitialized
+      ) {
+
         return;
+
       }
 
 
@@ -1456,15 +1713,11 @@
           'map',
           {
 
-            zoomControl: true,
+            zoomControl:
+              true,
 
-            preferCanvas: true,
-
-            /*
-             * Prevent the user from
-             * wandering to the rest
-             * of the Philippines.
-             */
+            preferCanvas:
+              true,
 
             maxBounds:
               PALAWAN_BOUNDS,
@@ -1483,25 +1736,33 @@
 
 
       /* ------------------------------------------------------
-         LEAFLET PANES
+         HUC PANE
          ------------------------------------------------------ */
 
       map.createPane(
         'hucPane'
       );
 
+
       map.getPane(
         'hucPane'
-      ).style.zIndex = 400;
+      ).style.zIndex =
+        400;
 
+
+      /* ------------------------------------------------------
+         MUNICIPALITY PANE
+         ------------------------------------------------------ */
 
       map.createPane(
         'municipalityPane'
       );
 
+
       map.getPane(
         'municipalityPane'
-      ).style.zIndex = 450;
+      ).style.zIndex =
+        450;
 
 
       /* ------------------------------------------------------
@@ -1512,42 +1773,29 @@
         'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         {
 
-          maxZoom: 19,
+          maxZoom:
+            19,
 
           attribution:
             '&copy; OpenStreetMap contributors'
 
         }
-      ).addTo(map);
+      ).addTo(
+        map
+      );
 
 
       /* ------------------------------------------------------
-         INITIAL PALAWAN VIEW
+         PALAWAN INITIAL VIEW
          ------------------------------------------------------ */
 
       map.fitBounds(
         PALAWAN_BOUNDS,
         {
-          padding: [10, 10]
+          padding:
+            [10, 10]
         }
       );
-
-
-      /*
-       * Force the default zoom to stay
-       * at a useful Palawan-wide level.
-       */
-
-      if (
-        map.getZoom() < 7
-      ) {
-
-        map.setView(
-          PALAWAN_CENTER,
-          PALAWAN_DEFAULT_ZOOM
-        );
-
-      }
 
 
       addLegend();
@@ -1567,7 +1815,8 @@
 
       const legend =
         L.control({
-          position: 'bottomright'
+          position:
+            'bottomright'
         });
 
 
@@ -1661,27 +1910,35 @@
     ) {
 
       const total =
-        toNumber(value);
+        toNumber(
+          value
+        );
 
 
       if (
         total > 8000
       ) {
+
         return '#238b45';
+
       }
 
 
       if (
         total > 5000
       ) {
+
         return '#74c476';
+
       }
 
 
       if (
         total > 2500
       ) {
+
         return '#bae4b3';
+
       }
 
 
@@ -1691,71 +1948,23 @@
 
 
     /* ========================================================
-       DATA MAP
-       ======================================================== */
-
-    function buildMunicipalityDataMap() {
-
-      const result = {};
-
-
-      municipalityData.forEach(
-        row => {
-
-          const key =
-            normalizeName(
-              row.Municipality
-            );
-
-
-          if (!key) {
-            return;
-          }
-
-
-          result[key] = {
-
-            Municipality:
-              row.Municipality,
-
-            Active:
-              toNumber(
-                row.Active
-              ),
-
-            Inactive:
-              toNumber(
-                row.Inactive
-              ),
-
-            Total:
-              toNumber(
-                row.Total
-              )
-
-          };
-
-        }
-      );
-
-
-      return result;
-
-    }
-
-
-    /* ========================================================
-       MUNICIPALITY MAP
+       RENDER MUNICIPALITY MAP
        ======================================================== */
 
     function renderMunicipalityMap() {
 
-      if (!municipalityGeoJSON) {
+      if (
+        !municipalityGeoJSON
+      ) {
+
         return;
+
       }
 
 
-      if (municipalityLayer) {
+      if (
+        municipalityLayer
+      ) {
 
         map.removeLayer(
           municipalityLayer
@@ -1767,8 +1976,8 @@
       }
 
 
-      const dataMap =
-        buildMunicipalityDataMap();
+      const lookup =
+        buildMunicipalityLookup();
 
 
       municipalityLayer =
@@ -1784,38 +1993,35 @@
 
 
             style:
-              function(feature) {
+              function(
+                feature
+              ) {
 
-                const name =
+                const geoName =
                   getMunicipalityName(
                     feature
                   );
 
 
-                const key =
-                  normalizeName(
-                    name
-                  );
-
-
                 const row =
-                  dataMap[key];
+                  findMunicipalityData(
+                    geoName,
+                    lookup
+                  );
 
 
                 const total =
                   row
-                    ? toNumber(
-                        row.Total
-                      )
+                    ? row.Total
                     : 0;
 
 
                 const selected =
                   selectedMunicipality &&
-                  normalizeName(
-                    name
+                  normalizeMunicipalityName(
+                    geoName
                   ) ===
-                  normalizeName(
+                  normalizeMunicipalityName(
                     selectedMunicipality
                   );
 
@@ -1837,11 +2043,12 @@
                       ? 3
                       : 1.2,
 
-                  opacity: 1,
+                  opacity:
+                    1,
 
                   fillOpacity:
                     selected
-                      ? 0.82
+                      ? 0.85
                       : 0.65
 
                 };
@@ -1855,68 +2062,63 @@
                 layer
               ) {
 
-                const name =
+                const geoName =
                   getMunicipalityName(
                     feature
                   );
 
 
-                const key =
-                  normalizeName(
-                    name
+                const row =
+                  findMunicipalityData(
+                    geoName,
+                    lookup
                   );
 
 
-                const row =
-                  dataMap[key];
+                /*
+                 * IMPORTANT:
+                 *
+                 * The hover tooltip uses
+                 * the matched API row.
+                 *
+                 * It does NOT rely on
+                 * GeoJSON having the
+                 * beneficiary numbers.
+                 */
+
+                const displayName =
+                  row
+                    ? row.Municipality
+                    : geoName;
 
 
                 const active =
                   row
-                    ? toNumber(
-                        row.Active
-                      )
+                    ? row.Active
                     : 0;
 
 
                 const inactive =
                   row
-                    ? toNumber(
-                        row.Inactive
-                      )
+                    ? row.Inactive
                     : 0;
 
 
                 const total =
                   row
-                    ? toNumber(
-                        row.Total
-                      )
+                    ? row.Total
                     : 0;
 
 
-                /*
-                 * Make sure this layer
-                 * remains interactive.
-                 */
-
-                layer.options.interactive =
-                  true;
-
-
-                layer.options.pane =
-                  'municipalityPane';
-
-
-                /* ------------------------------------------------
+                /* ----------------------------------------------
                    TOOLTIP
-                   ------------------------------------------------ */
+                   ---------------------------------------------- */
 
                 layer.bindTooltip(
                   `
                     <strong>
                       ${escapeHtml(
-                        name
+                        displayName
                       )}
                     </strong>
 
@@ -1942,14 +2144,21 @@
                     )}
                   `,
                   {
-                    sticky: true
+                    sticky:
+                      true,
+
+                    direction:
+                      'auto',
+
+                    opacity:
+                      0.96
                   }
                 );
 
 
-                /* ------------------------------------------------
+                /* ----------------------------------------------
                    POPUP
-                   ------------------------------------------------ */
+                   ---------------------------------------------- */
 
                 layer.bindPopup(
                   `
@@ -1957,7 +2166,7 @@
 
                       <div class="map-popup-title">
                         ${escapeHtml(
-                          name
+                          displayName
                         )}
                       </div>
 
@@ -2008,9 +2217,9 @@
                 );
 
 
-                /* ------------------------------------------------
+                /* ----------------------------------------------
                    MOUSEOVER
-                   ------------------------------------------------ */
+                   ---------------------------------------------- */
 
                 layer.on(
                   'mouseover',
@@ -2018,7 +2227,8 @@
 
                     this.setStyle({
 
-                      weight: 3,
+                      weight:
+                        3,
 
                       fillOpacity:
                         0.85
@@ -2032,9 +2242,9 @@
                 );
 
 
-                /* ------------------------------------------------
+                /* ----------------------------------------------
                    MOUSEOUT
-                   ------------------------------------------------ */
+                   ---------------------------------------------- */
 
                 layer.on(
                   'mouseout',
@@ -2042,10 +2252,10 @@
 
                     const selected =
                       selectedMunicipality &&
-                      normalizeName(
-                        name
+                      normalizeMunicipalityName(
+                        geoName
                       ) ===
-                      normalizeName(
+                      normalizeMunicipalityName(
                         selectedMunicipality
                       );
 
@@ -2059,7 +2269,7 @@
 
                       fillOpacity:
                         selected
-                          ? 0.82
+                          ? 0.85
                           : 0.65
 
                     });
@@ -2068,22 +2278,24 @@
                 );
 
 
-                /* ------------------------------------------------
+                /* ----------------------------------------------
                    CLICK
-                   ------------------------------------------------ */
+                   ---------------------------------------------- */
 
                 layer.on(
                   'click',
-                  function(e) {
+                  function(
+                    event
+                  ) {
 
                     L.DomEvent
                       .stopPropagation(
-                        e
+                        event
                       );
 
 
                     handleMunicipalitySelect(
-                      name,
+                      displayName,
                       layer
                     );
 
@@ -2112,18 +2324,25 @@
 
     function renderHucLayer() {
 
-      if (!hucGeoJSON) {
+      if (
+        !hucGeoJSON
+      ) {
+
         return;
+
       }
 
 
-      if (hucLayer) {
+      if (
+        hucLayer
+      ) {
 
         map.removeLayer(
           hucLayer
         );
 
-        hucLayer = null;
+        hucLayer =
+          null;
 
       }
 
@@ -2163,6 +2382,11 @@
         map
       );
 
+
+      /*
+       * Municipality layer stays
+       * above HUC boundaries.
+       */
 
       if (
         municipalityLayer
@@ -2229,16 +2453,18 @@
         const matching =
           municipalityData.find(
             row =>
-              normalizeName(
+              normalizeMunicipalityName(
                 row.Municipality
               ) ===
-              normalizeName(
+              normalizeMunicipalityName(
                 selectedMunicipality
               )
           );
 
 
-        if (matching) {
+        if (
+          matching
+        ) {
 
           select.value =
             matching.Municipality;
@@ -2287,10 +2513,10 @@
 
               const selected =
                 selectedMunicipality &&
-                normalizeName(
+                normalizeMunicipalityName(
                   selectedMunicipality
                 ) ===
-                normalizeName(
+                normalizeMunicipalityName(
                   row.Municipality
                 );
 
@@ -2309,10 +2535,13 @@
                 >
 
                   <div class="municipality-name">
+
                     ${escapeHtml(
                       row.Municipality
                     )}
+
                   </div>
+
 
                   <div class="municipality-stats">
 
@@ -2330,6 +2559,7 @@
 
                     </div>
 
+
                     <div>
 
                       <span class="stat-label">
@@ -2343,6 +2573,7 @@
                       </span>
 
                     </div>
+
 
                     <div>
 
@@ -2395,7 +2626,7 @@
 
 
     /* ========================================================
-       SELECT MUNICIPALITY
+       MUNICIPALITY SELECTION
        ======================================================== */
 
     async function handleMunicipalitySelect(
@@ -2410,10 +2641,12 @@
 
 
       /*
-       * Reset to Palawan.
+       * Reset.
        */
 
-      if (!requestedName) {
+      if (
+        !requestedName
+      ) {
 
         selectedMunicipality =
           '';
@@ -2442,16 +2675,16 @@
 
 
       /*
-       * Find exact API municipality.
+       * Resolve exact API name.
        */
 
       const matching =
         municipalityData.find(
           row =>
-            normalizeName(
+            normalizeMunicipalityName(
               row.Municipality
             ) ===
-            normalizeName(
+            normalizeMunicipalityName(
               requestedName
             )
         );
@@ -2479,10 +2712,12 @@
 
 
       /*
-       * Zoom to clicked municipality.
+       * Zoom to clicked polygon.
        */
 
-      if (clickedLayer) {
+      if (
+        clickedLayer
+      ) {
 
         try {
 
@@ -2541,13 +2776,17 @@
       municipalityName
     ) {
 
-      if (!municipalityLayer) {
+      if (
+        !municipalityLayer
+      ) {
+
         return;
+
       }
 
 
       const target =
-        normalizeName(
+        normalizeMunicipalityName(
           municipalityName
         );
 
@@ -2562,7 +2801,9 @@
           if (
             targetLayer
           ) {
+
             return;
+
           }
 
 
@@ -2573,8 +2814,9 @@
 
 
           if (
-            normalizeName(name) ===
-            target
+            normalizeMunicipalityName(
+              name
+            ) === target
           ) {
 
             targetLayer =
@@ -2586,8 +2828,12 @@
       );
 
 
-      if (!targetLayer) {
+      if (
+        !targetLayer
+      ) {
+
         return;
+
       }
 
 
@@ -2747,14 +2993,17 @@
       container.innerHTML =
         rows
           .map(
-            (row, index) => {
+            (
+              row,
+              index
+            ) => {
 
               const selected =
                 selectedBarangay &&
-                normalizeName(
+                normalizeMunicipalityName(
                   selectedBarangay
                 ) ===
-                normalizeName(
+                normalizeMunicipalityName(
                   row.Barangay
                 );
 
@@ -2771,38 +3020,49 @@
                 >
 
                   <div class="barangay-name">
+
                     ${escapeHtml(
                       row.Barangay
                     )}
+
                   </div>
+
 
                   <div class="barangay-values">
 
                     <span>
+
                       Active:
                       <strong>
                         ${formatNumber(
                           row.Active
                         )}
                       </strong>
+
                     </span>
 
+
                     <span>
+
                       Inactive:
                       <strong>
                         ${formatNumber(
                           row.Inactive
                         )}
                       </strong>
+
                     </span>
 
+
                     <span>
+
                       Total:
                       <strong>
                         ${formatNumber(
                           row.Total
                         )}
                       </strong>
+
                     </span>
 
                   </div>
@@ -2929,16 +3189,28 @@
           breakdown
         )
         .sort(
-          (a, b) =>
-            toNumber(b[1]) -
-            toNumber(a[1])
+          (
+            a,
+            b
+          ) =>
+            toNumber(
+              b[1]
+            ) -
+            toNumber(
+              a[1]
+            )
         );
 
 
       container.innerHTML =
         entries
           .map(
-            ([status, count]) => `
+            (
+              [
+                status,
+                count
+              ]
+            ) => `
 
               <div class="breakdown-row">
 
@@ -3081,8 +3353,11 @@
         date.toLocaleString(
           'en-PH',
           {
-            dateStyle: 'medium',
-            timeStyle: 'short'
+            dateStyle:
+              'medium',
+
+            timeStyle:
+              'short'
           }
         );
 
@@ -3100,15 +3375,6 @@
       }
 
 
-      /*
-       * IMPORTANT:
-       * Always use the fixed Palawan bounds.
-       *
-       * Do NOT use municipalityLayer.getBounds()
-       * here because that may include unwanted
-       * geographic extents.
-       */
-
       map.fitBounds(
         PALAWAN_BOUNDS,
         {
@@ -3116,6 +3382,36 @@
             [10, 10]
         }
       );
+
+    }
+
+
+    /* ========================================================
+       RESET
+       ======================================================== */
+
+    function resetMap() {
+
+      selectedMunicipality =
+        '';
+
+      selectedBarangay =
+        '';
+
+
+      document.getElementById(
+        'municipalityFilter'
+      ).value =
+        '';
+
+
+      renderMunicipalityList();
+
+      renderMunicipalityMap();
+
+      clearBarangayPanel();
+
+      fitPalawan();
 
     }
 
@@ -3148,36 +3444,6 @@
 
 
       await loadDashboard();
-
-    }
-
-
-    /* ========================================================
-       RESET
-       ======================================================== */
-
-    function resetMap() {
-
-      selectedMunicipality =
-        '';
-
-      selectedBarangay =
-        '';
-
-
-      document.getElementById(
-        'municipalityFilter'
-      ).value =
-        '';
-
-
-      renderMunicipalityList();
-
-      renderMunicipalityMap();
-
-      clearBarangayPanel();
-
-      fitPalawan();
 
     }
 
@@ -3306,8 +3572,8 @@
 
 
         /*
-         * Municipality must remain
-         * above HUC boundaries.
+         * Municipality polygons
+         * must remain above HUC.
          */
 
         if (
@@ -3321,8 +3587,7 @@
 
 
         /*
-         * Final map position:
-         * Palawan only.
+         * Palawan-wide initial view.
          */
 
         fitPalawan();
@@ -3344,6 +3609,16 @@
           provincial
         );
 
+
+        /*
+         * Diagnostic:
+         * show API municipality names.
+         */
+
+        console.log(
+          'Municipality API data:',
+          municipalityData
+        );
 
       } catch (error) {
 
