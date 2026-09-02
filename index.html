@@ -271,12 +271,8 @@
       color: #111827;
     }
 
-    .card-body {
-      padding: 16px;
-    }
-
     /* ==========================================================
-       MAP CARD
+       MAP
        ========================================================== */
 
     .map-container {
@@ -305,6 +301,7 @@
 
     #municipalityFilter:focus {
       border-color: #2563eb;
+
       box-shadow:
         0 0 0 2px rgba(37, 99, 235, 0.12);
     }
@@ -313,7 +310,7 @@
       width: 100%;
       height: 650px;
 
-      background: #e5e7eb;
+      background: #dbeafe;
     }
 
     /* ==========================================================
@@ -658,27 +655,6 @@
     }
 
     /* ==========================================================
-       LEAFLET
-       ========================================================== */
-
-    .leaflet-container {
-      font-family:
-        Inter,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Roboto,
-        Arial,
-        sans-serif;
-    }
-
-    .leaflet-tooltip {
-      border-radius: 6px;
-      box-shadow:
-        0 2px 7px rgba(0, 0, 0, 0.15);
-    }
-
-    /* ==========================================================
        RESPONSIVE
        ========================================================== */
 
@@ -760,11 +736,13 @@
        ======================================================== -->
 
   <div id="loadingOverlay">
+
     <div class="spinner"></div>
 
     <div class="loading-text">
       Loading Beneficiary Distribution Map...
     </div>
+
   </div>
 
 
@@ -774,9 +752,7 @@
 
   <div class="app">
 
-    <!-- ======================================================
-         HEADER
-         ====================================================== -->
+    <!-- HEADER -->
 
     <header>
 
@@ -818,15 +794,11 @@
     </header>
 
 
-    <!-- ======================================================
-         MAIN
-         ====================================================== -->
+    <!-- MAIN -->
 
     <main>
 
-      <!-- ====================================================
-           ERROR
-           ==================================================== -->
+      <!-- ERROR -->
 
       <div id="errorBox">
 
@@ -848,9 +820,7 @@
       </div>
 
 
-      <!-- ====================================================
-           SUMMARY
-           ==================================================== -->
+      <!-- SUMMARY -->
 
       <div class="summary-grid">
 
@@ -916,16 +886,12 @@
       </div>
 
 
-      <!-- ====================================================
-           DASHBOARD
-           ==================================================== -->
+      <!-- DASHBOARD GRID -->
 
       <div class="dashboard-grid">
 
 
-        <!-- ==================================================
-             MAP
-             ================================================== -->
+        <!-- MAP -->
 
         <div class="card map-container">
 
@@ -957,16 +923,12 @@
         </div>
 
 
-        <!-- ==================================================
-             RIGHT COLUMN
-             ================================================== -->
+        <!-- SIDE -->
 
         <div class="side-column">
 
 
-          <!-- ================================================
-               MUNICIPALITY BREAKDOWN
-               ================================================ -->
+          <!-- MUNICIPALITY -->
 
           <div class="card">
 
@@ -1000,9 +962,7 @@
           </div>
 
 
-          <!-- ================================================
-               BARANGAY BREAKDOWN
-               ================================================ -->
+          <!-- BARANGAY -->
 
           <div class="card">
 
@@ -1029,13 +989,9 @@
               </div>
 
 
-              <!-- ============================================
-                   STATUS BREAKDOWN
-                   ============================================ -->
+              <!-- STATUS BREAKDOWN -->
 
-              <div
-                id="breakdownContainer"
-              >
+              <div id="breakdownContainer">
 
                 <div class="breakdown-section">
 
@@ -1096,12 +1052,40 @@
       'https://raw.githubusercontent.com/amosting92/beneficiary-distribution-map/main/assets/municipalities.geojson';
 
 
-    const BARANGAY_GEOJSON =
-      'https://raw.githubusercontent.com/amosting92/beneficiary-distribution-map/main/assets/barangays.geojson';
-
-
     const HUC_GEOJSON =
       'https://raw.githubusercontent.com/amosting92/beneficiary-distribution-map/main/assets/highly_urbanized_cities.geojson';
+
+
+    /* ========================================================
+       PALAWAN MAP EXTENT
+       ======================================================== */
+
+    /*
+     * These bounds deliberately keep the dashboard focused
+     * on Palawan and nearby waters.
+     *
+     * Southwest:
+     *   Latitude 7.5
+     *   Longitude 114.5
+     *
+     * Northeast:
+     *   Latitude 13.5
+     *   Longitude 121.5
+     */
+
+    const PALAWAN_BOUNDS =
+      L.latLngBounds(
+        [7.5, 114.5],
+        [13.5, 121.5]
+      );
+
+
+    const PALAWAN_CENTER =
+      [10.0, 118.8];
+
+
+    const PALAWAN_DEFAULT_ZOOM =
+      8;
 
 
     /* ========================================================
@@ -1130,7 +1114,7 @@
 
 
     /* ========================================================
-       NORMALIZATION
+       NORMALIZE NAME
        ======================================================== */
 
     function normalizeName(value) {
@@ -1144,6 +1128,10 @@
     }
 
 
+    /* ========================================================
+       NUMBER
+       ======================================================== */
+
     function toNumber(value) {
 
       if (
@@ -1154,13 +1142,16 @@
         return 0;
       }
 
+
       const cleaned =
         String(value)
           .replace(/,/g, '')
           .trim();
 
+
       const number =
         Number(cleaned);
+
 
       return Number.isFinite(number)
         ? number
@@ -1236,7 +1227,9 @@
             setTimeout(
               () => {
 
-                if (finished) return;
+                if (finished) {
+                  return;
+                }
 
                 finished = true;
 
@@ -1255,16 +1248,23 @@
 
           function cleanup() {
 
-            clearTimeout(timeout);
+            clearTimeout(
+              timeout
+            );
+
 
             try {
+
               delete window[
                 callbackName
               ];
+
             } catch (_) {
+
               window[
                 callbackName
               ] = undefined;
+
             }
 
 
@@ -1285,7 +1285,10 @@
           window[callbackName] =
             response => {
 
-              if (finished) return;
+              if (finished) {
+                return;
+              }
+
 
               finished = true;
 
@@ -1319,11 +1322,15 @@
           script.onerror =
             () => {
 
-              if (finished) return;
+              if (finished) {
+                return;
+              }
+
 
               finished = true;
 
               cleanup();
+
 
               reject(
                 new Error(
@@ -1377,7 +1384,7 @@
 
 
     /* ========================================================
-       GEOJSON NAME EXTRACTION
+       MUNICIPALITY NAME
        ======================================================== */
 
     function getMunicipalityName(
@@ -1434,7 +1441,7 @@
 
 
     /* ========================================================
-       MAP INITIALIZATION
+       INITIALIZE MAP
        ======================================================== */
 
     function initializeMap() {
@@ -1448,18 +1455,36 @@
         L.map(
           'map',
           {
+
             zoomControl: true,
-            preferCanvas: true
+
+            preferCanvas: true,
+
+            /*
+             * Prevent the user from
+             * wandering to the rest
+             * of the Philippines.
+             */
+
+            maxBounds:
+              PALAWAN_BOUNDS,
+
+            maxBoundsViscosity:
+              1.0,
+
+            minZoom:
+              7,
+
+            maxZoom:
+              16
+
           }
         );
 
 
-      /*
-       * Dedicated panes.
-       *
-       * Municipality pane is above HUC pane.
-       * Both remain below Leaflet controls.
-       */
+      /* ------------------------------------------------------
+         LEAFLET PANES
+         ------------------------------------------------------ */
 
       map.createPane(
         'hucPane'
@@ -1479,36 +1504,57 @@
       ).style.zIndex = 450;
 
 
-      map.createPane(
-        'highlightPane'
-      );
-
-      map.getPane(
-        'highlightPane'
-      ).style.zIndex = 460;
-
+      /* ------------------------------------------------------
+         BASEMAP
+         ------------------------------------------------------ */
 
       L.tileLayer(
         'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         {
+
           maxZoom: 19,
 
           attribution:
             '&copy; OpenStreetMap contributors'
+
         }
       ).addTo(map);
 
 
-      map.setView(
-        [9.8, 118.7],
-        8
+      /* ------------------------------------------------------
+         INITIAL PALAWAN VIEW
+         ------------------------------------------------------ */
+
+      map.fitBounds(
+        PALAWAN_BOUNDS,
+        {
+          padding: [10, 10]
+        }
       );
+
+
+      /*
+       * Force the default zoom to stay
+       * at a useful Palawan-wide level.
+       */
+
+      if (
+        map.getZoom() < 7
+      ) {
+
+        map.setView(
+          PALAWAN_CENTER,
+          PALAWAN_DEFAULT_ZOOM
+        );
+
+      }
 
 
       addLegend();
 
 
-      mapInitialized = true;
+      mapInitialized =
+        true;
 
     }
 
@@ -1542,35 +1588,47 @@
             </div>
 
             <div class="legend-item">
+
               <span
                 class="legend-box"
                 style="background:#edf8e9"
               ></span>
+
               Low
+
             </div>
 
             <div class="legend-item">
+
               <span
                 class="legend-box"
                 style="background:#bae4b3"
               ></span>
+
               Moderate
+
             </div>
 
             <div class="legend-item">
+
               <span
                 class="legend-box"
                 style="background:#74c476"
               ></span>
+
               High
+
             </div>
 
             <div class="legend-item">
+
               <span
                 class="legend-box"
                 style="background:#238b45"
               ></span>
+
               Very High
+
             </div>
 
           `;
@@ -1587,13 +1645,15 @@
         };
 
 
-      legend.addTo(map);
+      legend.addTo(
+        map
+      );
 
     }
 
 
     /* ========================================================
-       MAP COLOR
+       DENSITY COLOR
        ======================================================== */
 
     function getDensityColor(
@@ -1604,17 +1664,23 @@
         toNumber(value);
 
 
-      if (total > 8000) {
+      if (
+        total > 8000
+      ) {
         return '#238b45';
       }
 
 
-      if (total > 5000) {
+      if (
+        total > 5000
+      ) {
         return '#74c476';
       }
 
 
-      if (total > 2500) {
+      if (
+        total > 2500
+      ) {
         return '#bae4b3';
       }
 
@@ -1625,7 +1691,7 @@
 
 
     /* ========================================================
-       BUILD MUNICIPALITY DATA MAP
+       DATA MAP
        ======================================================== */
 
     function buildMunicipalityDataMap() {
@@ -1642,7 +1708,9 @@
             );
 
 
-          if (!key) return;
+          if (!key) {
+            return;
+          }
 
 
           result[key] = {
@@ -1677,7 +1745,7 @@
 
 
     /* ========================================================
-       RENDER MUNICIPALITY MAP
+       MUNICIPALITY MAP
        ======================================================== */
 
     function renderMunicipalityMap() {
@@ -1693,7 +1761,8 @@
           municipalityLayer
         );
 
-        municipalityLayer = null;
+        municipalityLayer =
+          null;
 
       }
 
@@ -1710,8 +1779,8 @@
             pane:
               'municipalityPane',
 
-
-            interactive: true,
+            interactive:
+              true,
 
 
             style:
@@ -1735,13 +1804,17 @@
 
                 const total =
                   row
-                    ? toNumber(row.Total)
+                    ? toNumber(
+                        row.Total
+                      )
                     : 0;
 
 
                 const selected =
                   selectedMunicipality &&
-                  normalizeName(name) ===
+                  normalizeName(
+                    name
+                  ) ===
                   normalizeName(
                     selectedMunicipality
                   );
@@ -1798,10 +1871,33 @@
                   dataMap[key];
 
 
+                const active =
+                  row
+                    ? toNumber(
+                        row.Active
+                      )
+                    : 0;
+
+
+                const inactive =
+                  row
+                    ? toNumber(
+                        row.Inactive
+                      )
+                    : 0;
+
+
+                const total =
+                  row
+                    ? toNumber(
+                        row.Total
+                      )
+                    : 0;
+
+
                 /*
-                 * Explicitly ensure
-                 * municipality polygons
-                 * receive pointer events.
+                 * Make sure this layer
+                 * remains interactive.
                  */
 
                 layer.options.interactive =
@@ -1812,38 +1908,38 @@
                   'municipalityPane';
 
 
-                const active =
-                  row
-                    ? toNumber(row.Active)
-                    : 0;
-
-
-                const inactive =
-                  row
-                    ? toNumber(row.Inactive)
-                    : 0;
-
-
-                const total =
-                  row
-                    ? toNumber(row.Total)
-                    : 0;
-
+                /* ------------------------------------------------
+                   TOOLTIP
+                   ------------------------------------------------ */
 
                 layer.bindTooltip(
                   `
                     <strong>
-                      ${escapeHtml(name)}
+                      ${escapeHtml(
+                        name
+                      )}
                     </strong>
+
                     <br>
+
                     Active:
-                    ${formatNumber(active)}
+                    ${formatNumber(
+                      active
+                    )}
+
                     <br>
+
                     Inactive:
-                    ${formatNumber(inactive)}
+                    ${formatNumber(
+                      inactive
+                    )}
+
                     <br>
+
                     Total:
-                    ${formatNumber(total)}
+                    ${formatNumber(
+                      total
+                    )}
                   `,
                   {
                     sticky: true
@@ -1851,39 +1947,70 @@
                 );
 
 
+                /* ------------------------------------------------
+                   POPUP
+                   ------------------------------------------------ */
+
                 layer.bindPopup(
                   `
                     <div class="map-popup">
 
                       <div class="map-popup-title">
-                        ${escapeHtml(name)}
+                        ${escapeHtml(
+                          name
+                        )}
                       </div>
 
                       <div class="map-popup-row">
-                        <span>Active</span>
+
                         <span>
-                          ${formatNumber(active)}
+                          Active
                         </span>
+
+                        <span>
+                          ${formatNumber(
+                            active
+                          )}
+                        </span>
+
                       </div>
 
                       <div class="map-popup-row">
-                        <span>Inactive</span>
+
                         <span>
-                          ${formatNumber(inactive)}
+                          Inactive
                         </span>
+
+                        <span>
+                          ${formatNumber(
+                            inactive
+                          )}
+                        </span>
+
                       </div>
 
                       <div class="map-popup-row">
-                        <span>Total</span>
+
                         <span>
-                          ${formatNumber(total)}
+                          Total
                         </span>
+
+                        <span>
+                          ${formatNumber(
+                            total
+                          )}
+                        </span>
+
                       </div>
 
                     </div>
                   `
                 );
 
+
+                /* ------------------------------------------------
+                   MOUSEOVER
+                   ------------------------------------------------ */
 
                 layer.on(
                   'mouseover',
@@ -1905,13 +2032,19 @@
                 );
 
 
+                /* ------------------------------------------------
+                   MOUSEOUT
+                   ------------------------------------------------ */
+
                 layer.on(
                   'mouseout',
                   function() {
 
-                    const isSelected =
+                    const selected =
                       selectedMunicipality &&
-                      normalizeName(name) ===
+                      normalizeName(
+                        name
+                      ) ===
                       normalizeName(
                         selectedMunicipality
                       );
@@ -1920,12 +2053,12 @@
                     this.setStyle({
 
                       weight:
-                        isSelected
+                        selected
                           ? 3
                           : 1.2,
 
                       fillOpacity:
-                        isSelected
+                        selected
                           ? 0.82
                           : 0.65
 
@@ -1935,18 +2068,18 @@
                 );
 
 
+                /* ------------------------------------------------
+                   CLICK
+                   ------------------------------------------------ */
+
                 layer.on(
                   'click',
                   function(e) {
 
-                    /*
-                     * Critical:
-                     * prevent map click
-                     * propagation.
-                     */
-
                     L.DomEvent
-                      .stopPropagation(e);
+                      .stopPropagation(
+                        e
+                      );
 
 
                     handleMunicipalitySelect(
@@ -1967,11 +2100,6 @@
         map
       );
 
-
-      /*
-       * Keep municipality polygons
-       * above HUC boundaries.
-       */
 
       municipalityLayer.bringToFront();
 
@@ -2008,21 +2136,22 @@
             pane:
               'hucPane',
 
-
             interactive:
               false,
-
 
             style: {
 
               color:
                 '#374151',
 
-              weight: 2,
+              weight:
+                2,
 
-              opacity: 0.75,
+              opacity:
+                0.75,
 
-              fillOpacity: 0
+              fillOpacity:
+                0
 
             }
 
@@ -2034,11 +2163,6 @@
         map
       );
 
-
-      /*
-       * Reassert municipality
-       * layer on top.
-       */
 
       if (
         municipalityLayer
@@ -2053,7 +2177,7 @@
 
 
     /* ========================================================
-       POPULATE MUNICIPALITY SELECT
+       MUNICIPALITY FILTER
        ======================================================== */
 
     function populateMunicipalityFilter() {
@@ -2245,24 +2369,19 @@
           .join('');
 
 
-      /*
-       * Use event listeners rather than
-       * inline onclick attributes.
-       */
-
       container
         .querySelectorAll(
           '.municipality-row'
         )
         .forEach(
-          row => {
+          element => {
 
-            row.addEventListener(
+            element.addEventListener(
               'click',
               () => {
 
                 handleMunicipalitySelect(
-                  row.dataset
+                  element.dataset
                     .municipality
                 );
 
@@ -2276,7 +2395,7 @@
 
 
     /* ========================================================
-       MUNICIPALITY SELECTION
+       SELECT MUNICIPALITY
        ======================================================== */
 
     async function handleMunicipalitySelect(
@@ -2285,11 +2404,13 @@
     ) {
 
       const requestedName =
-        String(name || '').trim();
+        String(
+          name || ''
+        ).trim();
 
 
       /*
-       * Clear selection.
+       * Reset to Palawan.
        */
 
       if (!requestedName) {
@@ -2303,18 +2424,17 @@
 
         document.getElementById(
           'municipalityFilter'
-        ).value = '';
+        ).value =
+          '';
 
 
         renderMunicipalityList();
 
         renderMunicipalityMap();
 
-
         clearBarangayPanel();
 
-
-        fitProvince();
+        fitPalawan();
 
         return;
 
@@ -2322,8 +2442,7 @@
 
 
       /*
-       * Resolve the exact API
-       * municipality name.
+       * Find exact API municipality.
        */
 
       const matching =
@@ -2348,24 +2467,19 @@
         '';
 
 
-      const select =
-        document.getElementById(
-          'municipalityFilter'
-        );
-
-
-      select.value =
+      document.getElementById(
+        'municipalityFilter'
+      ).value =
         selectedMunicipality;
 
 
       renderMunicipalityList();
 
-
       renderMunicipalityMap();
 
 
       /*
-       * Zoom to clicked polygon.
+       * Zoom to clicked municipality.
        */
 
       if (clickedLayer) {
@@ -2387,7 +2501,8 @@
                 padding:
                   [30, 30],
 
-                maxZoom: 11
+                maxZoom:
+                  11
               }
             );
 
@@ -2403,11 +2518,6 @@
         }
 
       } else {
-
-        /*
-         * Find the corresponding
-         * polygon and zoom to it.
-         */
 
         zoomToMunicipality(
           selectedMunicipality
@@ -2498,7 +2608,8 @@
               padding:
                 [30, 30],
 
-              maxZoom: 11
+              maxZoom:
+                11
             }
           );
 
@@ -2517,7 +2628,7 @@
 
 
     /* ========================================================
-       BARANGAY DATA
+       BARANGAYS
        ======================================================== */
 
     async function loadBarangays(
@@ -2567,7 +2678,9 @@
 
 
         currentMunicipalityRows =
-          Array.isArray(rows)
+          Array.isArray(
+            rows
+          )
             ? rows
             : [];
 
@@ -2575,7 +2688,6 @@
         renderBarangayList(
           currentMunicipalityRows
         );
-
 
       } catch (error) {
 
@@ -2601,7 +2713,7 @@
 
 
     /* ========================================================
-       RENDER BARANGAY LIST
+       BARANGAY LIST
        ======================================================== */
 
     function renderBarangayList(
@@ -2726,13 +2838,13 @@
                   rows[index];
 
 
+                selectedBarangay =
+                  row.Barangay;
+
+
                 showBarangayBreakdown(
                   row
                 );
-
-
-                selectedBarangay =
-                  row.Barangay;
 
 
                 renderBarangayList(
@@ -2749,7 +2861,7 @@
 
 
     /* ========================================================
-       BARANGAY STATUS BREAKDOWN
+       BARANGAY BREAKDOWN
        ======================================================== */
 
     function showBarangayBreakdown(
@@ -2761,13 +2873,9 @@
       }
 
 
-      const container =
-        document.getElementById(
-          'breakdownContainer'
-        );
-
-
-      container.style.display =
+      document.getElementById(
+        'breakdownContainer'
+      ).style.display =
         'block';
 
 
@@ -2856,7 +2964,7 @@
 
 
     /* ========================================================
-       CLEAR BARANGAY PANEL
+       CLEAR BARANGAY
        ======================================================== */
 
     function clearBarangayPanel() {
@@ -2982,54 +3090,70 @@
 
 
     /* ========================================================
-       FIT PROVINCE
+       FIT PALAWAN
        ======================================================== */
 
-    function fitProvince() {
+    function fitPalawan() {
 
-      if (
-        municipalityLayer
-      ) {
-
-        try {
-
-          const bounds =
-            municipalityLayer
-              .getBounds();
-
-
-          if (
-            bounds &&
-            bounds.isValid()
-          ) {
-
-            map.fitBounds(
-              bounds,
-              {
-                padding:
-                  [20, 20]
-              }
-            );
-
-            return;
-
-          }
-
-        } catch (_) {}
-
+      if (!map) {
+        return;
       }
 
 
-      map.setView(
-        [9.8, 118.7],
-        8
+      /*
+       * IMPORTANT:
+       * Always use the fixed Palawan bounds.
+       *
+       * Do NOT use municipalityLayer.getBounds()
+       * here because that may include unwanted
+       * geographic extents.
+       */
+
+      map.fitBounds(
+        PALAWAN_BOUNDS,
+        {
+          padding:
+            [10, 10]
+        }
       );
 
     }
 
 
     /* ========================================================
-       RESET MAP
+       REFRESH
+       ======================================================== */
+
+    async function refreshDashboard() {
+
+      hideError();
+
+
+      selectedMunicipality =
+        '';
+
+      selectedBarangay =
+        '';
+
+
+      municipalityGeoJSON =
+        null;
+
+      hucGeoJSON =
+        null;
+
+
+      currentMunicipalityRows =
+        [];
+
+
+      await loadDashboard();
+
+    }
+
+
+    /* ========================================================
+       RESET
        ======================================================== */
 
     function resetMap() {
@@ -3053,41 +3177,7 @@
 
       clearBarangayPanel();
 
-      fitProvince();
-
-    }
-
-
-    /* ========================================================
-       REFRESH
-       ======================================================== */
-
-    async function refreshDashboard() {
-
-      hideError();
-
-
-      selectedMunicipality =
-        '';
-
-
-      selectedBarangay =
-        '';
-
-
-      municipalityGeoJSON =
-        null;
-
-
-      hucGeoJSON =
-        null;
-
-
-      currentMunicipalityRows =
-        [];
-
-
-      await loadDashboard();
+      fitPalawan();
 
     }
 
@@ -3107,11 +3197,6 @@
 
         initializeMap();
 
-
-        /*
-         * Load API data and
-         * geographic data concurrently.
-         */
 
         const [
           municipal,
@@ -3145,10 +3230,9 @@
           ]);
 
 
-        /*
-         * Validate municipality
-         * response.
-         */
+        /* ------------------------------------------------------
+           MUNICIPALITY DATA
+           ------------------------------------------------------ */
 
         municipalityData =
           Array.isArray(
@@ -3157,10 +3241,6 @@
             ? municipal
             : [];
 
-
-        /*
-         * Normalize numeric values.
-         */
 
         municipalityData =
           municipalityData.map(
@@ -3199,9 +3279,9 @@
           hucGeo;
 
 
-        /*
-         * Render dashboard.
-         */
+        /* ------------------------------------------------------
+           RENDER
+           ------------------------------------------------------ */
 
         renderProvincialTotals(
           provincial
@@ -3226,9 +3306,8 @@
 
 
         /*
-         * Ensure municipality
-         * polygons remain clickable
-         * after HUC rendering.
+         * Municipality must remain
+         * above HUC boundaries.
          */
 
         if (
@@ -3242,10 +3321,11 @@
 
 
         /*
-         * Fit map to Palawan.
+         * Final map position:
+         * Palawan only.
          */
 
-        fitProvince();
+        fitPalawan();
 
 
         console.log(
@@ -3279,11 +3359,6 @@
         );
 
 
-        /*
-         * Keep the map available
-         * even if the API fails.
-         */
-
         initializeMap();
 
       } finally {
@@ -3296,7 +3371,7 @@
 
 
     /* ========================================================
-       LOADING UI
+       LOADING
        ======================================================== */
 
     function showLoading(
@@ -3314,18 +3389,12 @@
 
 
     /* ========================================================
-       ERROR UI
+       ERROR
        ======================================================== */
 
     function showError(
       message
     ) {
-
-      const box =
-        document.getElementById(
-          'errorBox'
-        );
-
 
       document.getElementById(
         'errorMessage'
@@ -3333,7 +3402,9 @@
         message;
 
 
-      box.style.display =
+      document.getElementById(
+        'errorBox'
+      ).style.display =
         'block';
 
     }
